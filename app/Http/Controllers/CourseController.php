@@ -366,160 +366,235 @@ class CourseController extends Controller
     }
 
 
-    /**
-     * (Students) Disenroll a course and remove from all associated class schedules
-     * - This will remove the student from all classes linked to the course's subjects
-     * - It will also mark all future sessions as "not_marked" for attendance and remove any existing attendance records for those sessions
-     * - Past sessions will be unaffected to preserve attendance history, but the student will no longer be able to mark attendance for future sessions of that course
-     **/
-    public function disenrollCourse(Request $request, int $courseId)
-    {
-        try {
-            $student = $request->user();
+    // /**
+    //  * (Students) Disenroll a course and remove from all associated class schedules
+    //  * - This will remove the student from all classes linked to the course's subjects
+    //  * - It will also mark all future sessions as "not_marked" for attendance and remove any existing attendance records for those sessions
+    //  * - Past sessions will be unaffected to preserve attendance history, but the student will no longer be able to mark attendance for future sessions of that course
+    //  **/
+    // public function disenrollCourse(Request $request, int $courseId)
+    // {
+    //     try {
+    //         $student = $request->user();
 
-            /*
-            |--------------------------------------------------------------------------
-            | 1. Validate Active Enrollment
-            |--------------------------------------------------------------------------
-            */
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | 1. Validate Active Enrollment
+    //         |--------------------------------------------------------------------------
+    //         */
 
-            $enrollment = CoursesEnrollment::where('student_id', $student->id)
-                ->where('course_id', $courseId)
-                ->where('status', 'active')
-                ->where('end_date', '>=', now())
-                ->first();
+    //         $enrollment = CoursesEnrollment::where('student_id', $student->id)
+    //             ->where('course_id', $courseId)
+    //             ->where('status', 'active')
+    //             ->where('end_date', '>=', now())
+    //             ->first();
 
-            if (!$enrollment) {
-                return response()->json([
-                    'message' => 'No active enrollment found for this course'
-                ], 404);
-            }
+    //         if (!$enrollment) {
+    //             return response()->json([
+    //                 'message' => 'No active enrollment found for this course'
+    //             ], 404);
+    //         }
 
-            DB::beginTransaction();
+    //         DB::beginTransaction();
 
-            /*
-            |--------------------------------------------------------------------------
-            | 2. Cancel ALL Related Payments (IMPORTANT)
-            |--------------------------------------------------------------------------
-            | We cancel any ongoing or valid payments tied to this enrollment
-            */
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | 2. Cancel ALL Related Payments (IMPORTANT)
+    //         |--------------------------------------------------------------------------
+    //         | We cancel any ongoing or valid payments tied to this enrollment
+    //         */
 
-            // Payment::where('student_id', $student->id)
-            //     ->where('course_enrollment_id', $enrollment->id)
-            //     ->whereIn('status', ['pending', 'successful'])
-            //     ->update([
-            //         'status' => 'cancelled',
-            //         'meta' => DB::raw("json_set(COALESCE(meta, '{}'), '$.cancelled_reason', 'course_disenrollment')")
-            //     ]); // Soft delete payments as well
+    //         // Payment::where('student_id', $student->id)
+    //         //     ->where('course_enrollment_id', $enrollment->id)
+    //         //     ->whereIn('status', ['pending', 'successful'])
+    //         //     ->update([
+    //         //         'status' => 'cancelled',
+    //         //         'meta' => DB::raw("json_set(COALESCE(meta, '{}'), '$.cancelled_reason', 'course_disenrollment')")
+    //         //     ]); // Soft delete payments as well
 
 
-            $paymentQuery = Payment::where('student_id', $student->id)
-                ->where('course_enrollment_id', $enrollment->id)
-                ->whereIn('status', ['pending', 'successful']);
+    //         $paymentQuery = Payment::where('student_id', $student->id)
+    //             ->where('course_enrollment_id', $enrollment->id)
+    //             ->whereIn('status', ['pending', 'successful']);
 
-            $paymentQuery->update([
-                'status' => 'cancelled',
-                'meta' => DB::raw("json_set(COALESCE(meta, '{}'), '$.cancelled_reason', 'course_disenrollment')")
-            ]);
+    //         $paymentQuery->update([
+    //             'status' => 'cancelled',
+    //             'meta' => DB::raw("json_set(COALESCE(meta, '{}'), '$.cancelled_reason', 'course_disenrollment')")
+    //         ]);
 
-            // $paymentQuery->delete(); // soft delete (if model uses SoftDeletes)
+    //         // $paymentQuery->delete(); // soft delete (if model uses SoftDeletes)
 
-            /*
-            |--------------------------------------------------------------------------
-            | 3. Soft Delete Subject Enrollments
-            |--------------------------------------------------------------------------
-            */
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | 3. Soft Delete Subject Enrollments
+    //         |--------------------------------------------------------------------------
+    //         */
 
-            $subjectIds = Subject::where('course_id', $courseId)->pluck('id');
+    //         $subjectIds = Subject::where('course_id', $courseId)->pluck('id');
 
-            SubjectsEnrollment::where('student_id', $student->id)
-                ->where('course_enrollment_id', $enrollment->id)
-                ->whereIn('subject_id', $subjectIds)
-                ->delete(); // Soft delete
+    //         SubjectsEnrollment::where('student_id', $student->id)
+    //             ->where('course_enrollment_id', $enrollment->id)
+    //             ->whereIn('subject_id', $subjectIds)
+    //             ->delete(); // Soft delete
 
-            /*
-            |--------------------------------------------------------------------------
-            | 4. Get Classes for Subjects
-            |--------------------------------------------------------------------------
-            */
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | 4. Get Classes for Subjects
+    //         |--------------------------------------------------------------------------
+    //         */
 
-            $classIds = Classes::whereIn('subject_id', $subjectIds)->pluck('id');
+    //         $classIds = Classes::whereIn('subject_id', $subjectIds)->pluck('id');
 
-            if ($classIds->isNotEmpty()) {
+    //         if ($classIds->isNotEmpty()) {
 
-                /*
-                |--------------------------------------------------------------------------
-                | 5. Get Future Sessions ONLY
-                |--------------------------------------------------------------------------
-                */
+    //             /*
+    //             |--------------------------------------------------------------------------
+    //             | 5. Get Future Sessions ONLY
+    //             |--------------------------------------------------------------------------
+    //             */
 
-                $futureSessions = ClassSession::whereIn('class_id', $classIds)
-                    ->whereDate('session_date', '>=', now())
-                    ->pluck('id');
+    //             $futureSessions = ClassSession::whereIn('class_id', $classIds)
+    //                 ->whereDate('session_date', '>=', now())
+    //                 ->pluck('id');
 
-                if ($futureSessions->isNotEmpty()) {
+    //             if ($futureSessions->isNotEmpty()) {
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | 6. Remove Future Attendance Records
-                    |--------------------------------------------------------------------------
-                    */
+    //                 /*
+    //                 |--------------------------------------------------------------------------
+    //                 | 6. Remove Future Attendance Records
+    //                 |--------------------------------------------------------------------------
+    //                 */
 
-                    ClassAttendance::where('student_id', $student->id)
-                        ->whereIn('class_session_id', $futureSessions)
-                        ->delete();
+    //                 ClassAttendance::where('student_id', $student->id)
+    //                     ->whereIn('class_session_id', $futureSessions)
+    //                     ->delete();
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | 7. Optional: Insert "not_marked"
-                    |--------------------------------------------------------------------------
-                    */
+    //                 /*
+    //                 |--------------------------------------------------------------------------
+    //                 | 7. Optional: Insert "not_marked"
+    //                 |--------------------------------------------------------------------------
+    //                 */
 
-                    $attendanceData = [];
+    //                 $attendanceData = [];
 
-                    foreach ($futureSessions as $sessionId) {
-                        $attendanceData[] = [
-                            'student_id' => $student->id,
-                            'class_session_id' => $sessionId,
-                            'status' => 'not_marked',
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
+    //                 foreach ($futureSessions as $sessionId) {
+    //                     $attendanceData[] = [
+    //                         'student_id' => $student->id,
+    //                         'class_session_id' => $sessionId,
+    //                         'status' => 'not_marked',
+    //                         'created_at' => now(),
+    //                         'updated_at' => now(),
+    //                     ];
+    //                 }
 
-                    ClassAttendance::insertOrIgnore($attendanceData);
-                }
-            }
+    //                 ClassAttendance::insertOrIgnore($attendanceData);
+    //             }
+    //         }
 
-            /*
-            |--------------------------------------------------------------------------
-            | 8. Cancel + Soft Delete Enrollment
-            |--------------------------------------------------------------------------
-            */
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | 8. Cancel + Soft Delete Enrollment
+    //         |--------------------------------------------------------------------------
+    //         */
 
-            $enrollment->update([
-                'status' => 'cancelled'
-            ]);
+    //         $enrollment->update([
+    //             'status' => 'cancelled'
+    //         ]);
 
-            $enrollment->delete(); // Soft delete
-            $paymentQuery->delete(); // soft delete (if model uses SoftDeletes)
+    //         $enrollment->delete(); // Soft delete
+    //         $paymentQuery->delete(); // soft delete (if model uses SoftDeletes)
 
-            DB::commit();
+    //         DB::commit();
 
-            return response()->json([
-                'message' => 'Successfully disenrolled. Payments cancelled, subjects removed, and future sessions cleared.'
-            ], 200);
+    //         return response()->json([
+    //             'message' => 'Successfully disenrolled. Payments cancelled, subjects removed, and future sessions cleared.'
+    //         ], 200);
 
-        } catch (\Throwable $e) {
+    //     } catch (\Throwable $e) {
 
-            DB::rollBack();
+    //         DB::rollBack();
 
-            return response()->json([
-                'message' => 'Failed to disenroll from course',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'message' => 'Failed to disenroll from course',
+    //             'error' => config('app.debug') ? $e->getMessage() : null
+    //         ], 500);
+    //     }
+    // }
+
+
+    // public function cancelCoursePayments(Request $request, int $courseId){
+    //     try {
+    //         $student = $request->user();
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | 1. Validate Enrollment (DO NOT require active payment here)
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         $enrollment = CoursesEnrollment::where('student_id', $student->id)
+    //             ->where('course_id', $courseId)
+    //             ->where('status', 'active')
+    //             ->where('end_date', '>=', now())
+    //             ->first();
+
+    //         if (!$enrollment) {
+    //             return response()->json([
+    //                 'message' => 'No active enrollment found for this course'
+    //             ], 404);
+    //         }
+
+    //         DB::beginTransaction();
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | 2. Cancel ONLY Payments
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         $payments = Payment::where('student_id', $student->id)
+    //             ->where('course_enrollment_id', $enrollment->id)
+    //             ->whereIn('status', ['pending', 'successful'])
+    //             ->get();
+
+    //         if ($payments->isEmpty()) {
+    //             DB::rollBack();
+
+    //             return response()->json([
+    //                 'message' => 'No active payments found to cancel'
+    //             ], 404);
+    //         }
+
+    //         foreach ($payments as $payment) {
+    //             $payment->update([
+    //                 'status' => 'cancelled',
+    //                 'meta' => array_merge($payment->meta ?? [], [
+    //                     'cancelled_reason' => 'user_cancelled_payment',
+    //                     'cancelled_at' => now()
+    //                 ])
+    //             ]);
+
+    //             // Optional: Soft delete (only if your logic requires hiding them)
+    //             // $payment->delete();
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'message' => 'Payments cancelled successfully. Course access remains active.',
+    //             'payments_cancelled' => $payments->count()
+    //         ], 200);
+
+    //     } catch (\Throwable $e) {
+
+    //         DB::rollBack();
+
+    //         return response()->json([
+    //             'message' => 'Failed to cancel payments',
+    //             'error' => config('app.debug') ? $e->getMessage() : null
+    //         ], 500);
+    //     }
+    // }
 
     /**
      * ADMIN: Get all courses (including inactive and soft-deleted)
