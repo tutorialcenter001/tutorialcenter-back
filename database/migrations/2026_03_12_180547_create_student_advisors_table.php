@@ -13,11 +13,11 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('student_id')
-                ->constrained()
+                ->constrained('students')
                 ->cascadeOnDelete();
 
             $table->foreignId('staff_id')
-                ->constrained()
+                ->constrained('staffs')
                 ->cascadeOnDelete();
 
             $table->string('role')->default('advisor');
