@@ -805,33 +805,33 @@ class StudentController extends Controller
     public function forgetPassword(Request $request)
     {
         try {
-        $request->validate([
-            'email' => 'nullable|email|exists:students,email|required_without:tel',
-            'tel' => [
-                'nullable',
-                'string',
-                'exists:students,tel',
-                'required_without:email',
-                'regex:/^(\+234|234|0)(70|80|81|90|91)\d{8}$/',
-            ],
-        ]);
+            $request->validate([
+                'email' => 'nullable|email|exists:students,email|required_without:tel',
+                'tel' => [
+                    'nullable',
+                    'string',
+                    'exists:students,tel',
+                    'required_without:email',
+                    'regex:/^(\+234|234|0)(70|80|81|90|91)\d{8}$/',
+                ],
+            ]);
 
-        // Find student by email or phone
-        $student = null;
-        if ($request->email) {
-            $student = Student::where('email', $request->email)->first();
-        } elseif ($request->tel) {
-            $student = Student::where('tel', $request->tel)->first();
-        }
+            // Find student by email or phone
+            $student = null;
+            if ($request->email) {
+                $student = Student::where('email', $request->email)->first();
+            } elseif ($request->tel) {
+                $student = Student::where('tel', $request->tel)->first();
+            }
 
-        if (!$student) {
-            return response()->json([
-                'message' => 'Student not found.',
-            ], 404);
-        }
+            if (!$student) {
+                return response()->json([
+                    'message' => 'Student not found.',
+                ], 404);
+            }
 
-        DB::beginTransaction();
-        // try {
+            DB::beginTransaction();
+            // try {
 
             // Send OTP based on available contact method
             if ($student->email) {
@@ -864,55 +864,55 @@ class StudentController extends Controller
     public function changePassword(Request $request)
     {
         try {
-        $request->validate([
-            'email' => 'nullable|email|exists:students,email|required_without:tel',
-            'tel' => [
-                'nullable',
-                'string',
-                'exists:students,tel',
-                'required_without:email',
-                'regex:/^(\+234|234|0)(70|80|81|90|91)\d{8}$/',
-            ],
-            'otp' => 'required|string',
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'same:confirmPassword',
-                // 'confirmed',
-                // 'regex:/[a-z]/',
-                // 'regex:/[A-Z]/',
-                // 'regex:/[0-9]/',
-                // 'regex:/[@$!%*#?&]/',
-            ],
-            'confirmPassword' => [
-                'required',
-                'string',
-                'min:8',
-                'same:password',
-                // 'confirmed',
-                // 'regex:/[a-z]/',
-                // 'regex:/[A-Z]/',
-                // 'regex:/[0-9]/',
-                // 'regex:/[@$!%*#?&]/',
-            ],
-        ]);
+            $request->validate([
+                'email' => 'nullable|email|exists:students,email|required_without:tel',
+                'tel' => [
+                    'nullable',
+                    'string',
+                    'exists:students,tel',
+                    'required_without:email',
+                    'regex:/^(\+234|234|0)(70|80|81|90|91)\d{8}$/',
+                ],
+                'otp' => 'required|string',
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'same:confirmPassword',
+                    // 'confirmed',
+                    // 'regex:/[a-z]/',
+                    // 'regex:/[A-Z]/',
+                    // 'regex:/[0-9]/',
+                    // 'regex:/[@$!%*#?&]/',
+                ],
+                'confirmPassword' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'same:password',
+                    // 'confirmed',
+                    // 'regex:/[a-z]/',
+                    // 'regex:/[A-Z]/',
+                    // 'regex:/[0-9]/',
+                    // 'regex:/[@$!%*#?&]/',
+                ],
+            ]);
 
-        // Find student by email or phone
-        $student = null;
-        if ($request->email) {
-            $student = Student::where('email', $request->email)->first();
-        } elseif ($request->tel) {
-            $student = Student::where('tel', $request->tel)->first();
-        }
+            // Find student by email or phone
+            $student = null;
+            if ($request->email) {
+                $student = Student::where('email', $request->email)->first();
+            } elseif ($request->tel) {
+                $student = Student::where('tel', $request->tel)->first();
+            }
 
-        if (!$student) {
-            return response()->json([
-                'message' => 'Student not found.',
-            ], 404);
-        }
+            if (!$student) {
+                return response()->json([
+                    'message' => 'Student not found.',
+                ], 404);
+            }
 
-        // try {
+            // try {
             DB::beginTransaction();
 
             // Verify OTP based on contact method
@@ -1031,5 +1031,343 @@ class StudentController extends Controller
         ]);
 
         logger()->info("Password reset OTP for {$tel} is {$code}");
+    }
+
+    /**
+     * Normalize Nigerian phone numbers to E.164 format (e.g., 2348012345678)
+     * Accepts formats like 08012345678, +2348012345678, 2348012345678
+     **/
+    // private function normalizePhone($phone)
+    // {
+    //     $phone = preg_replace('/\D/', '', $phone); // remove non-digits
+
+    //     if (str_starts_with($phone, '0')) {
+    //         return '234' . substr($phone, 1);
+    //     }
+
+    //     if (str_starts_with($phone, '234')) {
+    //         return $phone;
+    //     }
+
+    //     return $phone;
+    // }
+
+    /**
+     * Request to change phone number - Send OTP to new phone number
+     * Requires authentication
+     **/
+    public function requestPhoneNumberChange(Request $request)
+    {
+        try {
+            $student = auth('sanctum')->user();
+
+            if (!$student) {
+                return response()->json([
+                    'message' => 'Unauthorized. Please login first.',
+                ], 401);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 1. Validate FIRST (before using request data)
+            |--------------------------------------------------------------------------
+            */
+
+            $validator = Validator::make($request->all(), [
+                'new_tel' => [
+                    'required',
+                    'string',
+                    'regex:/^(\+234|234|0)(70|80|81|90|91)\d{8}$/',
+                    'unique:students,tel',
+                    'different:tel',
+                ],
+            ], [
+                'new_tel.different' => 'The new phone number must be different from your current phone number.',
+                'new_tel.unique' => 'This phone number is already in use.',
+                'new_tel.regex' => 'Please provide a valid Nigerian phone number.',
+                'new_tel.required' => 'New phone number is required.',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2. Normalize Phone Number (IMPORTANT)
+            |--------------------------------------------------------------------------
+            */
+
+            // $newTel = $this->normalizePhone($request->new_tel);
+            $newTel = $request->new_tel; // Use raw input for now to avoid confusion in logs and responses
+
+            logger()->info("Requesting phone change for student {$student->id} to {$newTel}");
+
+            DB::beginTransaction();
+
+            /*
+            |--------------------------------------------------------------------------
+            | 3. Prevent OTP Spam (optional but recommended)
+            |--------------------------------------------------------------------------
+            */
+
+            $existingRequest = DB::table('contact_change_requests')
+                ->where('requestable_type', Student::class)
+                ->where('requestable_id', $student->id)
+                ->where('change_type', 'phone')
+                ->where('is_verified', false)
+                ->where('otp_expires_at', '>', now())
+                ->first();
+
+            if ($existingRequest) {
+                DB::rollBack();
+
+                return response()->json([
+                    'message' => 'An OTP has already been sent. Please wait before requesting another.',
+                    'expires_at' => $existingRequest->otp_expires_at,
+                ], 429);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 4. Delete ONLY this student's previous phone requests
+            |--------------------------------------------------------------------------
+            */
+
+            DB::table('contact_change_requests')
+                ->where('requestable_type', Student::class)
+                ->where('requestable_id', $student->id)
+                ->where('change_type', 'phone')
+                ->delete();
+
+            /*
+            |--------------------------------------------------------------------------
+            | 5. Generate OTP
+            |--------------------------------------------------------------------------
+            */
+
+            $code = random_int(100000, 999999);
+
+            /*
+            |--------------------------------------------------------------------------
+            | 6. Send SMS (SIMULATED)
+            |--------------------------------------------------------------------------
+            */
+
+            $smsSent = true;
+
+            if (!$smsSent) {
+                throw new \Exception('SMS sending failed');
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 7. Store Request
+            |--------------------------------------------------------------------------
+            */
+
+            DB::table('contact_change_requests')->insert([
+                'requestable_type' => Student::class,
+                'requestable_id' => $student->id,
+                'change_type' => 'phone',
+                'new_value' => $newTel,
+                'otp_code' => $code,
+                'otp_expires_at' => Carbon::now()->addMinutes(10),
+                'is_verified' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::commit();
+
+            // TEMP: Remove in production
+            logger()->info("Phone change OTP for {$newTel} is {$code}");
+
+            return response()->json([
+                'message' => 'OTP sent successfully to your new phone number.',
+                'new_tel' => $newTel,
+                'expires_in_minutes' => 10,
+            ], 200);
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to send OTP to new phone number.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Confirm phone number change with OTP verification
+     * Does not require authentication - uses OTP to find the request
+     **/
+    public function confirmPhoneNumberChange(Request $request)
+    {
+        try {
+            $request->validate([
+                'otp' => 'required|string|size:6',
+            ], [
+                'otp.required' => 'OTP is required.',
+                'otp.size' => 'OTP must be 6 digits.',
+            ]);
+
+            DB::beginTransaction();
+
+            try {
+                // 1. Find the pending phone change request by OTP
+                $changeRequest = DB::table('contact_change_requests')
+                    ->where('change_type', 'phone')
+                    ->where('otp_code', $request->otp)
+                    ->latest()
+                    ->first();
+
+
+                if (!$changeRequest) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'Invalid or expired OTP.',
+                    ], 400);
+                }
+
+                // 2. Get the student from the request
+                $student = Student::find($changeRequest->requestable_id);
+
+                if (!$student) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'Student not found.',
+                    ], 404);
+                }
+
+                // 3. Check if OTP has expired
+                if (Carbon::parse($changeRequest->otp_expires_at)->isPast()) {
+                    DB::table('contact_change_requests')
+                        ->where('id', $changeRequest->id)
+                        ->delete();
+
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'OTP has expired. Please request a new phone change.',
+                    ], 400);
+                }
+
+                // 4. Update student's phone number
+                $student->update([
+                    'tel' => $changeRequest->new_value,
+                    'tel_verified_at' => now(),
+                ]);
+
+                // 5. Delete the phone change request
+                DB::table('contact_change_requests')
+                    ->where('id', $changeRequest->id)
+                    ->delete();
+
+                // 7. Clean up any old OTP records for the old phone number (if exists)
+                DB::table('phone_otps')
+                    ->where('tel', $student->getOriginal('tel'))
+                    ->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'message' => 'Phone number changed successfully.',
+                    'new_tel' => $changeRequest->new_value,
+                    'tel_verified_at' => now(),
+                ], 200);
+
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to confirm phone number change.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Resend OTP for phone number change
+     * Requires authentication
+     **/
+    public function resendPhoneChangeOtp(Request $request)
+    {
+        try {
+            $student = auth('sanctum')->user();
+
+            if (!$student) {
+                return response()->json([
+                    'message' => 'Unauthorized. Please login first.',
+                ], 401);
+            }
+
+            DB::beginTransaction();
+
+            try {
+                // 1. Check if there's a pending phone change request
+                $changeRequest = DB::table('contact_change_requests')
+                    ->where('requestable_type', Student::class)
+                    ->where('requestable_id', $student->id)
+                    ->where('change_type', 'phone')
+                    ->latest()
+                    ->first();
+
+                if (!$changeRequest) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'No pending phone change request found.',
+                    ], 400);
+                }
+
+                // 2. Generate new OTP
+                $code = random_int(100000, 999999);
+                $message = "Your phone number change verification code is {$code}. It expires in 10 minutes.";
+
+                // 3. Send SMS (SIMULATED)
+                $smsSent = true; // simulate success
+
+                if (!$smsSent) {
+                    throw new \Exception('SMS sending failed');
+                }
+
+                // 4. Update the contact change request with new OTP
+                DB::table('contact_change_requests')
+                    ->where('id', $changeRequest->id)
+                    ->update([
+                        'otp_code' => $code,
+                        'otp_expires_at' => Carbon::now()->addMinutes(10),
+                        'updated_at' => now(),
+                    ]);
+
+                DB::commit();
+
+                // TEMP: log instead of sending SMS
+                logger()->info("Phone change OTP resent for {$changeRequest->new_value} is {$code}");
+
+                return response()->json([
+                    'message' => 'OTP resent successfully to your new phone number.',
+                    'new_tel' => $changeRequest->new_value,
+                    'expires_in_minutes' => 10,
+                ], 200);
+
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to resend OTP.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }
