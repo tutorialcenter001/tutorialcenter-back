@@ -20,7 +20,7 @@ class StaffEmailVerificationNotification extends Notification
 
     public function toMail($notifiable)
     {
-        $verifyUrl = config('app.frontend_url') . '/verify-email?email=' . $notifiable->email . '&token=' . $this->token;
+        $verifyUrl = config('app.frontend_url') . '/staff-verify-email?email=' . $notifiable->email . '&token=' . $this->token;
         // $phoneVerifyUrl = config('app.frontend_url') . '/verify-phone?telephone=' . urlencode($notifiable->telephone);
 
         return (new MailMessage)

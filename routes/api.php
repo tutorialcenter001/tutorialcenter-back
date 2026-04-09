@@ -90,7 +90,7 @@ Route::prefix('staffs')->group(function () {
     Route::post('/login', [StaffController::class, 'login']);
 
     // Email verification
-    Route::get('/verify-email', [StaffController::class, 'verifyEmail']);
+    Route::post('/verify-email', [StaffController::class, 'verifyEmail']);
     Route::post('/resend-email-verification', [StaffController::class, 'resendEmailVerification']);
 
     // Phone OTP verification
