@@ -39,4 +39,17 @@ class Guardian extends Model
         return $this->morphOne(EmailVerification::class, 'verifiable');
     }
 
+    public function students()
+    {
+        return $this->belongsToMany(
+            Student::class,
+            'guardian_students',
+            'guardian_id',
+            'student_id'
+        )
+            ->using(GuardianStudent::class)
+            ->withPivot('relationship')
+            ->withTimestamps();
+    }
+
 }

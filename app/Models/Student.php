@@ -69,10 +69,23 @@ class Student extends Model
     }
 
     public function advisors()
-{
-    return $this->belongsToMany(Staff::class, 'student_advisors')
-        ->withPivot(['role', 'assigned_at'])
-        ->withTimestamps();
-}
+    {
+        return $this->belongsToMany(Staff::class, 'student_advisors')
+            ->withPivot(['role', 'assigned_at'])
+            ->withTimestamps();
+    }
+
+    public function guardians()
+    {
+        return $this->belongsToMany(
+            Guardian::class,
+            'guardian_students',
+            'student_id',
+            'guardian_id'
+        )
+            ->using(GuardianStudent::class)
+            ->withPivot('relationship')
+            ->withTimestamps();
+    }
 
 }
