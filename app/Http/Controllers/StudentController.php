@@ -1036,8 +1036,12 @@ class StudentController extends Controller
     }
 
 
-
-
+    /*
+    * Request contact change (email or phone)
+     * Requires authentication - uses current user to find the request
+     * Validates input, checks for existing pending requests, generates OTP, sends notification, and stores request in DB
+     *
+    */
     public function requestContactChange(Request $request)
     {
         try {
