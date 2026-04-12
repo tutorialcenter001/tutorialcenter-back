@@ -807,17 +807,7 @@ class StudentController extends Controller
         }
     }
 
-    /**
-     * logout.
-     **/
-    public function logout(Request $request){
-        $request->user()->tokens()->delete();
-        StudentNotificationService::notify($request->user(), 'logout');
-
-        return response()->json([
-            'message' => 'Logged out successfully.',
-        ]);
-    }
+    
 
     /**
      * Forget Password - Send OTP to email or phone
