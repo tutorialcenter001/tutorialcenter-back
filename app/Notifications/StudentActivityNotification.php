@@ -56,6 +56,16 @@ class StudentActivityNotification extends Notification
         return match ($this->type) {
             'login' => "{$identity}{$contactSuffix} just logged in",
             'logout' => "{$identity}{$contactSuffix} just logged out",
+            'forget password' => "{$identity}{$contactSuffix} requested a password reset",
+            'change password' => "{$identity}{$contactSuffix} changed their password",
+            'update profile' => "{$identity}{$contactSuffix} updated their profile",
+            'contact change request' => "{$identity}{$contactSuffix} requested a contact change",
+            'confirm contact change' => "{$identity}{$contactSuffix} confirmed a contact change",
+
+
+
+
+
             'attendance' => "{$identity}{$contactSuffix} attended a class",
             'assignment_submitted' => "{$identity}{$contactSuffix} submitted an assignment",
             'payment_successful' => "{$identity}{$contactSuffix} made a payment",
