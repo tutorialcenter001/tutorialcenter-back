@@ -9,6 +9,7 @@ use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,8 +29,12 @@ Route::post('payments', [PaymentController::class, 'store']); // Public: Process
 | Authenticated User Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth:sanctum')->get('/notifications', function (Request $request) {
-    return $request->user()->notifications;
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
 });
 
 /*
@@ -68,6 +73,13 @@ Route::prefix('students')->middleware('auth:sanctum')->group(function () {
     Route::post('/contact/change/request', [StudentController::class, 'requestContactChange']); // Request contact change (phone or email)
     Route::post('/contact/change/confirm', [StudentController::class, 'confirmContactChange']); // Verify contact change with OTP
     // Route::post('/phone/change/resend-otp', [StudentController::class, 'resendPhoneChangeOtp']); // Resend OTP for phone number change
+
+    // Notification Routes
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
 });
 
 Route::prefix('students')->group(function () {
@@ -112,6 +124,13 @@ Route::prefix('staffs')->group(function () {
 
         // Classes
         Route::post('/classes/session/recording', [ClassesController::class, 'updateSessionRecording']); // Update recording link for a session
+
+        // Notification Routes
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+        Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+        Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
     });
 
 });
@@ -155,6 +174,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
         Route::get('/all', [ClassesController::class, 'allClassesSchedule']); // List all classes
     });
 
+    // Notification Routes
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
 });
 
 /*
