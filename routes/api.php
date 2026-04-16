@@ -33,7 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
-    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
 });
 
@@ -174,6 +173,13 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
         Route::get('/all', [ClassesController::class, 'allClassesSchedule']); // List all classes
     });
 
+    // Student Management
+    Route::prefix('students')->group(function () {
+        Route::get('/all', [StudentController::class, 'index']); // List all students
+        Route::get('/{id}', [StudentController::class, 'show']); //
+    });
+
+    
     // Notification Routes
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);

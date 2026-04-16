@@ -861,8 +861,57 @@ class StudentController extends Controller
         }
     }
 
+    /*
+    * Fetch all students (for admin use)
+    */
+    public function index()
+    {
+        $students = Student::withTrashed()->get();
+        return response()->json([
+            'message' => 'Students retrieved successfully.',
+            'students' => $students,
+        ], 200);
+    }
+
+     /*
+     * Fetch single student by ID (for admin use)
+     */
+    public function show($id)
+    {
+        $student = Student::withTrashed()->find($id);
+        if (!$student) {
+            return response()->json([
+                'message' => 'Student not found.',
+            ], 404);
+        }
+        return response()->json([
+            'message' => 'Student retrieved successfully.',
+            'student' => $student,
+        ], 200);
+    }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
 
 
