@@ -24,8 +24,7 @@ class StudentController extends Controller
     /**
      * Login
      **/
-    public function login(Request $request)
-    {
+    public function login(Request $request){
         // 1️⃣ Validate input
         $validator = Validator::make($request->all(), [
             'entry' => 'required|string',
