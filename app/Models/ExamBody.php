@@ -13,6 +13,7 @@ class ExamBody extends Model
     protected $fillable = [
         'name',
         'slug',
+        'course_id',
         'status',
     ];
 
@@ -44,6 +45,16 @@ class ExamBody extends Model
     | Relationships
     |--------------------------------------------------------------------------
     */
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
+    // public function exams()
+    // {
+    //     return $this->hasMany(Exam::class);
+    // }
 
     // public function examYears()
     // {

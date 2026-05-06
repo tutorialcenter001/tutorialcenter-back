@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // WAEC, NECO, JAMB
             $table->string('slug')->unique();
+            $table->foreignId('course_id')->constrained('courses')->cascadeOnDelete();
             $table->string('status')->default('active');
             $table->softDeletes();
             $table->timestamps();

@@ -19,10 +19,11 @@ use Illuminate\Validation\ValidationException;
 
 class StaffController extends Controller
 {
-     /**
+    /**
      * Staff login.
      */
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         try {
             // 1. Validate input
             $request->validate([
@@ -88,7 +89,6 @@ class StaffController extends Controller
                 'staff' => $staff,
                 'role' => $staff->role,
             ], 200);
-
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Login failed.',
@@ -99,21 +99,22 @@ class StaffController extends Controller
 
     /**
      * Staff logout.
-    **/
-    public function logout(Request $request){
+     **/
+    public function logout(Request $request)
+    {
         $staff = $request->user();
         $request->user()->tokens()->delete();
         $staff->notify(new StaffActivityNotification(
-                $staff->id,
-                "{$staff->role} {$staff->firstname} {$staff->surname} logged out."
-            ));
+            $staff->id,
+            "{$staff->role} {$staff->firstname} {$staff->surname} logged out."
+        ));
 
         return response()->json([
             'message' => 'Logged out successfully.',
         ]);
     }
 
-            /**
+    /**
      * Forget Password - Send OTP to email or phone
      **/
     public function forgetPassword(Request $request)
@@ -166,7 +167,6 @@ class StaffController extends Controller
             return response()->json([
                 'message' => 'Password reset OTP sent successfully.',
             ], 200);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -291,7 +291,6 @@ class StaffController extends Controller
             return response()->json([
                 'message' => 'Password changed successfully.',
             ]);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -433,7 +432,6 @@ class StaffController extends Controller
                 'staff' => $staff,
                 'temporary_password' => $staffId, // remove later in production
             ], 201);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -481,7 +479,6 @@ class StaffController extends Controller
             return response()->json([
                 'message' => 'Email verified successfully.',
             ]);
-
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Email verification failed.',
@@ -523,7 +520,6 @@ class StaffController extends Controller
             return response()->json([
                 'message' => 'Verification email resent successfully.',
             ]);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -563,7 +559,6 @@ class StaffController extends Controller
             DB::commit();
 
             logger()->info("Staff OTP for {$tel}: {$code}");
-
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
@@ -617,7 +612,6 @@ class StaffController extends Controller
             return response()->json([
                 'message' => 'Phone verified successfully.',
             ]);
-
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Phone verification failed.',
@@ -654,7 +648,6 @@ class StaffController extends Controller
             return response()->json([
                 'message' => 'OTP resent successfully.',
             ]);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -749,7 +742,7 @@ class StaffController extends Controller
                     'errors' => $validator->errors(),
                 ], 422);
             }
-            
+
             if ($request->hasFile('profile_picture')) {
                 // If staff had an existing picture, remove it
                 if ($staff->profile_picture) {
@@ -799,7 +792,8 @@ class StaffController extends Controller
     /*
      * (Admin) List active staffs base on the personal access token table
      */
-    public function activeStaffs() {
+    public function activeStaffs()
+    {
         try {
             $activeStaffIds = DB::table('personal_access_tokens')
                 ->where('name', 'staff-token')
@@ -823,7 +817,8 @@ class StaffController extends Controller
     /**
      * Send password reset email
      **/
-    protected function sendPasswordResetEmail(Staff $staff): void{
+    protected function sendPasswordResetEmail(Staff $staff): void
+    {
         // Remove existing password reset records for this user
         EmailVerification::where('verifiable_type', Staff::class)
             ->where('verifiable_id', $staff->id)
@@ -841,5 +836,4 @@ class StaffController extends Controller
         // Send password reset notification (you'll need to create this notification)
         $staff->notify(new \App\Notifications\StaffPasswordReset($token));
     }
-
 }

@@ -50,6 +50,7 @@ class ExamBodyController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255', 'unique:exam_bodies,name'],
+            'course_id' => ['required', 'exists:courses,id'],
             'status' => ['nullable', 'in:active,inactive'],
         ]);
 
@@ -63,6 +64,7 @@ class ExamBodyController extends Controller
             $examBody = ExamBody::create([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
+                'course_id' => $request->course_id,
                 'status' => $request->status ?? 'active',
             ]);
 
@@ -84,6 +86,7 @@ class ExamBodyController extends Controller
     {
         try {
             $examBody->load('exams'); // Load related exams if needed
+            return response()->json($examBody);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Unauthorized to view exam body.',
@@ -103,6 +106,7 @@ class ExamBodyController extends Controller
                 'max:255',
                 'unique:exam_bodies,name,' . $examBody->id,
             ],
+            'course_id' => ['required', 'exists:courses,id'],
             'status' => ['nullable', 'in:active,inactive'],
         ]);
 
@@ -116,6 +120,7 @@ class ExamBodyController extends Controller
             $examBody->update([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
+                'course_id' => $request->course_id,
                 'status' => $request->status ?? $examBody->status,
             ]);
 

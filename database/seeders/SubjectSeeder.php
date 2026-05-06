@@ -1088,7 +1088,6 @@ class SubjectSeeder extends Seeder
                     'banner' => $subject['banner'],
                     'courses' => $subject['courses'],
                     'departments' => $subject['departments'],
-                    'assignees' => [], // assign tutors later
                     'status' => 'active',
                 ]
             );
