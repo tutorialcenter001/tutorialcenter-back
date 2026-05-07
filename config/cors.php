@@ -20,7 +20,7 @@ return [
     'allowed_methods' => ['*'],
 
     // 'allowed_origins' => ['*'],
-    'allowed_origins' => ['http://localhost:3000', 'https://tutorialcenter-rho.vercel.app', 'https://tutorialcenter.africa'],
+    'allowed_origins' => ['http://localhost:3000', 'https://tutorialcenter-rho.vercel.app', 'https://tutorialcenter.africa', 'https://affiliates.tutorialcenter.africa'],
 
     'allowed_origins_patterns' => [],
 
