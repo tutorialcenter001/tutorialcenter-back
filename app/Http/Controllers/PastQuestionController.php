@@ -1,0 +1,285 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\PastQuestion;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+
+class PastQuestionController extends Controller
+{
+    public function index(Request $request)
+    {
+        try {
+            $query = PastQuestion::with([
+                'examYear.examBody',
+                'examYear.subject',
+                'group',
+                'options',
+                'files',
+            ]);
+
+            if ($request->filled('exam_year_id')) {
+                $query->where('exam_year_id', $request->exam_year_id);
+            }
+
+            if ($request->filled('past_question_group_id')) {
+                $query->where('past_question_group_id', $request->past_question_group_id);
+            }
+
+            if ($request->filled('question_type')) {
+                $query->where('question_type', $request->question_type);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $questions = $query
+                ->orderBy('question_number')
+                ->paginate(20);
+            return response()->json(['questions' => $questions], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while fetching past questions.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'exam_year_id' => ['required', 'exists:exam_years,id'],
+            'past_question_group_id' => ['nullable', 'exists:past_question_groups,id'],
+
+            'question_number' => ['nullable', 'string', 'max:50'],
+            'question' => ['required', 'string'],
+            'question_type' => ['nullable', 'in:multiple_choice,true_false,short_answer,essay'],
+            'marks' => ['nullable', 'integer', 'min:1'],
+            'explanation' => ['nullable', 'string'],
+            'status' => ['nullable', 'in:active,inactive'],
+
+            'options' => ['nullable', 'array'],
+            'options.*.label' => ['nullable', 'string', 'max:10'],
+            'options.*.option_text' => ['required_with:options', 'string'],
+            'options.*.is_correct' => ['nullable', 'boolean'],
+            'options.*.sort_order' => ['nullable', 'integer'],
+
+            'files' => ['nullable', 'array'],
+            'files.*' => ['file', 'mimes:jpg,jpeg,png,gif,webp,pdf,mp3,wav', 'max:5120'],
+            'captions' => ['nullable', 'array'],
+            'captions.*' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $question = PastQuestion::create([
+                'exam_year_id' => $request->exam_year_id,
+                'past_question_group_id' => $request->past_question_group_id,
+                'question_number' => $request->question_number,
+                'question' => $request->question,
+                'question_type' => $request->question_type ?? 'multiple_choice',
+                'marks' => $request->marks ?? 1,
+                'explanation' => $request->explanation,
+                'status' => $request->status ?? 'active',
+            ]);
+
+            if ($request->filled('options')) {
+                foreach ($request->options as $index => $option) {
+                    $question->options()->create([
+                        'label' => $option['label'] ?? null,
+                        'option_text' => $option['option_text'],
+                        'is_correct' => $option['is_correct'] ?? false,
+                        'sort_order' => $option['sort_order'] ?? $index,
+                    ]);
+                }
+            }
+
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $index => $file) {
+                    $path = $file->store('past-question-files', 'public');
+
+                    $question->files()->create([
+                        'file_path' => $path,
+                        'file_type' => $this->getFileType($file->getMimeType()),
+                        'caption' => $request->captions[$index] ?? null,
+                    ]);
+                }
+            }
+            DB::commit();
+            return response()->json([
+                'message' => 'Past question created successfully.',
+                'data' => $question->load(['examYear.examBody', 'examYear.subject', 'group', 'options', 'files']),
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An error occurred while creating the past question.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function show(PastQuestion $pastQuestion)
+    {
+        return response()->json(
+            $pastQuestion->load([
+                'examYear.examBody',
+                'examYear.subject',
+                'group',
+                'options',
+                'files',
+            ])
+        );
+    }
+
+    public function update(Request $request, PastQuestion $pastQuestion)
+    {
+        $validator = Validator::make($request->all(), [
+            'exam_year_id' => ['required', 'exists:exam_years,id'],
+            'past_question_group_id' => ['nullable', 'exists:past_question_groups,id'],
+
+            'question_number' => ['nullable', 'string', 'max:50'],
+            'question' => ['required', 'string'],
+            'question_type' => ['nullable', 'in:multiple_choice,true_false,short_answer,essay'],
+            'marks' => ['nullable', 'integer', 'min:1'],
+            'explanation' => ['nullable', 'string'],
+            'status' => ['nullable', 'in:active,inactive'],
+
+            'options' => ['nullable', 'array'],
+            'options.*.id' => ['nullable', 'exists:past_question_options,id'],
+            'options.*.label' => ['nullable', 'string', 'max:10'],
+            'options.*.option_text' => ['required_with:options', 'string'],
+            'options.*.is_correct' => ['nullable', 'boolean'],
+            'options.*.sort_order' => ['nullable', 'integer'],
+
+            'files' => ['nullable', 'array'],
+            'files.*' => ['file', 'mimes:jpg,jpeg,png,gif,webp,pdf,mp3,wav', 'max:5120'],
+            'captions' => ['nullable', 'array'],
+            'captions.*' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+        DB::beginTransaction();
+        try {
+            $pastQuestion->update([
+                'exam_year_id' => $request->exam_year_id,
+                'past_question_group_id' => $request->past_question_group_id,
+                'question_number' => $request->question_number,
+                'question' => $request->question,
+                'question_type' => $request->question_type ?? $pastQuestion->question_type,
+                'marks' => $request->marks ?? $pastQuestion->marks,
+                'explanation' => $request->explanation,
+                'status' => $request->status ?? $pastQuestion->status,
+            ]);
+
+            if ($request->filled('options')) {
+                $pastQuestion->options()->delete();
+
+                foreach ($request->options as $index => $option) {
+                    $pastQuestion->options()->create([
+                        'label' => $option['label'] ?? null,
+                        'option_text' => $option['option_text'],
+                        'is_correct' => $option['is_correct'] ?? false,
+                        'sort_order' => $option['sort_order'] ?? $index,
+                    ]);
+                }
+            }
+
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $index => $file) {
+                    $path = $file->store('past-question-files', 'public');
+
+                    $pastQuestion->files()->create([
+                        'file_path' => $path,
+                        'file_type' => $this->getFileType($file->getMimeType()),
+                        'caption' => $request->captions[$index] ?? null,
+                    ]);
+                }
+            }
+            DB::commit();
+            return response()->json([
+                'message' => 'Past question updated successfully.',
+                'data' => $pastQuestion->load(['examYear.examBody', 'examYear.subject', 'group', 'options', 'files']),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An error occurred while updating the past question.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function destroy(PastQuestion $pastQuestion)
+    {
+        DB::beginTransaction();
+        try {
+            $pastQuestion->delete();
+            DB::commit();
+            return response()->json([
+                'message' => 'Past question deleted successfully.',
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An error occurred while deleting the past question.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function restore(PastQuestion $pastQuestion)
+    {
+        DB::beginTransaction();
+        try {
+            $pastQuestion->restore();
+            DB::commit();
+            return response()->json([
+                'message' => 'Past question restored successfully.',
+                'data' => $pastQuestion->load(['examYear.examBody', 'examYear.subject', 'group', 'options', 'files']),
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An error occurred while restoring the past question.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function getFileType(string $mimeType): string
+    {
+        try {
+            if (str_starts_with($mimeType, 'image/')) {
+                return 'image';
+            }
+
+            if (str_starts_with($mimeType, 'audio/')) {
+                return 'audio';
+            }
+
+            if ($mimeType === 'application/pdf') {
+                return 'pdf';
+            }
+
+            return 'file';
+        } catch (\Exception $e) {
+            return 'file type detection error: ' . $e->getMessage();
+        }
+    }
+}

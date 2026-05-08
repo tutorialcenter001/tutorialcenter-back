@@ -12,6 +12,9 @@ use App\Http\Controllers\ExamYearController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PastQuestionController;
+use App\Http\Controllers\PastQuestionGroupController;
+use App\Http\Controllers\PastQuestionOptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -199,6 +202,33 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
         Route::get('/{id}', [ExamYearController::class, 'show']); // Show exam year details
         Route::put('/update/{id}', [ExamYearController::class, 'update']); // Update exam year
         Route::delete('/destroy/{id}', [ExamYearController::class, 'destroy']); // Soft delete exam year
+    });
+
+    // Past Question Group Management
+    Route::prefix('past-question-groups')->group(function () {
+        Route::post('/', [PastQuestionGroupController::class, 'store']); // Create new past question group
+        Route::get('/all', [PastQuestionGroupController::class, 'index']); // List all past question groups (including inactive)
+        Route::get('/{id}', [PastQuestionGroupController::class, 'show']); // Show past question group details
+        Route::put('/update/{id}', [PastQuestionGroupController::class, 'update']); // Update past question group
+        Route::post('/restore/{id}', [PastQuestionGroupController::class, 'restore']); // Restore soft-deleted past question group
+        Route::delete('/destroy/{id}', [PastQuestionGroupController::class, 'destroy']); // Soft delete past question group
+    });
+
+    // Past Question Management
+    Route::prefix('past-questions')->group(function () {
+        Route::post('/', [PastQuestionController::class, 'store']); // Create new past question
+        Route::get('/all', [PastQuestionController::class, 'index']); // List all past questions (including inactive)
+        Route::get('/{id}', [PastQuestionController::class, 'show']); // Show past question details
+        Route::put('/update/{id}', [PastQuestionController::class, 'update']); // Update past question
+        Route::post('/restore/{id}', [PastQuestionController::class, 'restore']); // Restore soft-deleted past question
+        Route::delete('/destroy/{id}', [PastQuestionController::class, 'destroy']); // Soft delete past question
+    });
+
+    // Past Question Option Management
+    Route::prefix('past-question-options')->group(function () {
+        Route::put('/update/{id}', [PastQuestionOptionController::class, 'update']); // Update past question option
+        Route::post('/restore/{id}', [PastQuestionOptionController::class, 'restore']); // Restore soft-deleted past question option
+        Route::delete('/destroy/{id}', [PastQuestionOptionController::class, 'destroy']); // Soft delete past question option
     });
 
     // Notification Routes
