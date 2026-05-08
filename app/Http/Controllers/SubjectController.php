@@ -25,7 +25,6 @@ class SubjectController extends Controller
     /**
      * Create new subject (Admin)
      */
-
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -122,99 +121,6 @@ class SubjectController extends Controller
             ], 500);
         }
     }
-
-    // public function store(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string|max:255',
-    //         'description' => 'required|string',
-    //         'banner' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-
-    //         'departments' => 'required|array|min:1',
-    //         'departments.*' => 'string|max:100',
-
-    //         'courses' => 'nullable|array',
-    //         'courses.*' => 'exists:courses,id',
-
-    //         'status' => 'required|in:active,inactive',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => 'Validation failed',
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
-
-    //     DB::beginTransaction();
-
-    //     try {
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | 1. Prevent Duplicate Subject (same name + departments)
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         $existing = Subject::where('name', $request->name)
-    //             ->whereJsonContains('departments', $request->departments)
-    //             ->first();
-
-    //         if ($existing) {
-    //             return response()->json([
-    //                 'message' => 'Subject already exists for selected departments',
-    //             ], 409);
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | 2. Upload Banner
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         $bannerPath = $request->file('banner')->store('subject_banners', 'public');
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | 3. Create Subject
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         $subject = Subject::create([
-    //             'name' => $request->name,
-    //             'description' => $request->description,
-    //             'banner' => $bannerPath,
-    //             'departments' => array_values($request->departments),
-    //             'status' => $request->status,
-    //         ]);
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | 4. Attach Courses (Many-to-Many)
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         if ($request->filled('courses')) {
-    //             $subject->courses()->sync($request->courses);
-    //         }
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'message' => 'Subject created successfully.',
-    //             'subject' => $subject->load('courses'),
-    //         ], 201);
-
-    //     } catch (\Throwable $e) {
-
-    //         DB::rollBack();
-
-    //         return response()->json([
-    //             'message' => 'Failed to create subject.',
-    //             'error' => config('app.debug') ? $e->getMessage() : null,
-    //         ], 500);
-    //     }
-    // }
 
     /**
      * Update subject (Admin)
@@ -347,30 +253,10 @@ class SubjectController extends Controller
             ], 500);
         }
     }
-    // public function subjectsByCourse(int $courseId)
-    // {
-    //     try {
-    //         $subjects = Subject::where('status', 'active')
-    //             ->whereJsonContains('courses', $courseId)
-    //             ->get();
-
-    //         return response()->json([
-    //             'message' => 'Subjects fetched successfully.',
-    //             'subjects' => $subjects,
-    //         ], 200);
-    //     } catch (\Throwable $e) {
-    //         return response()->json([
-    //             'message' => 'Failed to retrieve subjects.',
-    //             'error' => config('app.debug') ? $e->getMessage() : null,
-    //         ], 500);
-    //     }
-    // }
-
 
     /*
      * Public Method: List subjects by course and department
      */
-
     public function subjectsByCourseAndDepartment(int $courseId, string $department)
     {
         try {
@@ -394,26 +280,6 @@ class SubjectController extends Controller
             ], 500);
         }
     }
-    // public function subjectsByCourseAndDepartment(int $courseId, string $department)
-    // {
-    //     try {
-    //         $subjects = Subject::query()
-    //             ->where('status', 'active')
-    //             ->whereJsonContains('courses', $courseId)
-    //             ->whereJsonContains('departments', $department)
-    //             ->get();
-
-    //         return response()->json([
-    //             'message' => 'Subjects fetched successfully.',
-    //             'subjects' => $subjects,
-    //         ], 200);
-    //     } catch (\Throwable $e) {
-    //         return response()->json([
-    //             'message' => 'Failed to retrieve subjects.',
-    //             'error' => config('app.debug') ? $e->getMessage() : null,
-    //         ], 500);
-    //     }
-    // }
 
     /*
      * Public Method: Subject enrollment
