@@ -123,197 +123,143 @@ class SubjectController extends Controller
     }
 
     /**
- * Update subject (Admin)
- */
-public function update(Request $request, $id)
-{
-    $subject = Subject::find($id);
+     * Update subject (Admin)
+     */
+    public function update(Request $request, $id)
+    {
+        $subject = Subject::find($id);
 
-    if (!$subject) {
-        return response()->json([
-            'message' => 'Subject not found.',
-        ], 404);
-    }
+        if (!$subject) {
+            return response()->json([
+                'message' => 'Subject not found.',
+            ], 404);
+        }
 
-    $validator = Validator::make($request->all(), [
-        'name' => 'nullable|string|max:255',
-        'description' => 'nullable|string',
-        'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
 
-        'departments' => 'nullable|array|min:1',
-        'departments.*' => 'string|max:100',
+            'departments' => 'nullable|array|min:1',
+            'departments.*' => 'string|max:100',
 
-        'courses' => 'nullable|array',
-        'courses.*' => 'exists:courses,id',
+            'courses' => 'nullable|array',
+            'courses.*' => 'exists:courses,id',
 
-        'status' => 'nullable|in:active,inactive',
-    ]);
+            'status' => 'nullable|in:active,inactive',
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'message' => 'Validation failed',
-            'errors' => $validator->errors(),
-        ], 422);
-    }
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-    DB::beginTransaction();
+        DB::beginTransaction();
 
-    try {
+        try {
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | 1. Prevent Duplicate Subject (same name + overlapping departments)
         |--------------------------------------------------------------------------
         */
 
-        $newName = $request->filled('name')
-            ? $request->name
-            : $subject->name;
+            $newName = $request->filled('name')
+                ? $request->name
+                : $subject->name;
 
-        $newDepartments = $request->filled('departments')
-            ? $request->departments
-            : ($subject->departments ?? []);
+            $newDepartments = $request->filled('departments')
+                ? $request->departments
+                : ($subject->departments ?? []);
 
-        $existing = Subject::where('id', '!=', $subject->id)
-            ->where('name', $newName)
-            ->get()
-            ->first(function ($item) use ($newDepartments) {
-                return !empty(array_intersect(
-                    $item->departments ?? [],
-                    $newDepartments
-                ));
-            });
+            $existing = Subject::where('id', '!=', $subject->id)
+                ->where('name', $newName)
+                ->get()
+                ->first(function ($item) use ($newDepartments) {
+                    return !empty(array_intersect(
+                        $item->departments ?? [],
+                        $newDepartments
+                    ));
+                });
 
-        if ($existing) {
-            DB::rollBack();
+            if ($existing) {
+                DB::rollBack();
 
-            return response()->json([
-                'message' => 'Subject already exists for selected departments',
-            ], 409);
-        }
+                return response()->json([
+                    'message' => 'Subject already exists for selected departments',
+                ], 409);
+            }
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | 2. Prepare Update Data
         |--------------------------------------------------------------------------
         */
 
-        $data = [];
+            $data = [];
 
-        if ($request->filled('name')) {
-            $data['name'] = $request->name;
-        }
+            if ($request->filled('name')) {
+                $data['name'] = $request->name;
+            }
 
-        if ($request->filled('description')) {
-            $data['description'] = $request->description;
-        }
+            if ($request->filled('description')) {
+                $data['description'] = $request->description;
+            }
 
-        if ($request->filled('departments')) {
-            $data['departments'] = array_values($request->departments);
-        }
+            if ($request->filled('departments')) {
+                $data['departments'] = array_values($request->departments);
+            }
 
-        if ($request->filled('status')) {
-            $data['status'] = $request->status;
-        }
+            if ($request->filled('status')) {
+                $data['status'] = $request->status;
+            }
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | 3. Upload New Banner
         |--------------------------------------------------------------------------
         */
 
-        if ($request->hasFile('banner')) {
-            $data['banner'] = $request->file('banner')
-                ->store('subject_banners', 'public');
-        }
+            if ($request->hasFile('banner')) {
+                $data['banner'] = $request->file('banner')
+                    ->store('subject_banners', 'public');
+            }
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | 4. Update Subject
         |--------------------------------------------------------------------------
         */
 
-        $subject->update($data);
+            $subject->update($data);
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | 5. Sync Courses
         |--------------------------------------------------------------------------
         */
 
-        if ($request->has('courses')) {
-            $subject->courses()->sync($request->courses ?? []);
+            if ($request->has('courses')) {
+                $subject->courses()->sync($request->courses ?? []);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Subject updated successfully.',
+                'subject' => $subject->fresh()->load('courses'),
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to update subject.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
         }
-
-        DB::commit();
-
-        return response()->json([
-            'message' => 'Subject updated successfully.',
-            'subject' => $subject->fresh()->load('courses'),
-        ]);
-    } catch (\Throwable $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'message' => 'Failed to update subject.',
-            'error' => config('app.debug') ? $e->getMessage() : null,
-        ], 500);
     }
-}
-
-    // /**
-    //  * Update subject (Admin)
-    //  */
-    // public function update(Request $request, $id)
-    // {
-    //     $subject = Subject::find($id);
-
-    //     if (!$subject) {
-    //         return response()->json([
-    //             'message' => 'Subject not found.',
-    //         ], 404);
-    //     }
-
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'nullable|string|max:255',
-    //         'description' => 'nullable|string',
-    //         'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-    //         'department' => 'nullable|in:science,commercial,art,general',
-    //         'status' => 'nullable|in:active,inactive',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
-
-    //     DB::beginTransaction();
-
-    //     try {
-    //         $data = $validator->validated();
-
-    //         if ($request->hasFile('banner')) {
-    //             $data['banner'] = $request->file('banner')->store('subject_banners', 'public');
-    //         }
-
-    //         $subject->update($data);
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'message' => 'Subject updated successfully.',
-    //             'subject' => $subject->fresh(),
-    //         ]);
-    //     } catch (\Throwable $e) {
-    //         DB::rollBack();
-
-    //         return response()->json([
-    //             'message' => 'Failed to update subject.',
-    //             'error' => config('app.debug') ? $e->getMessage() : null,
-    //         ], 500);
-    //     }
-    // }
 
     /**
      * Soft delete subject (Admin)
