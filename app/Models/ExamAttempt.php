@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ExamAttempt extends Model
+{
+    const IN_PROGRESS = 'in_progress';
+    const COMPLETED = 'completed';
+    const ABANDONED = 'abandoned';
+
+    protected $fillable = [
+        'student_id',
+        'exam_year_id',
+        'score',
+        'total_questions',
+        'correct_answers',
+        'wrong_answers',
+        'unanswered',
+        'percentage',
+        'started_at',
+        'submitted_at',
+        'status',
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime',
+        'submitted_at' => 'datetime',
+    ];
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
+
+    public function examYear()
+    {
+        return $this->belongsTo(ExamYear::class);
+    }
+
+    public function answers()
+    {
+        return $this->hasMany(ExamAttemptAnswer::class);
+    }
+}

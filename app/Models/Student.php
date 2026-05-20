@@ -88,4 +88,48 @@ class Student extends Model
             ->withTimestamps();
     }
 
+    public function enrolledInSubject($subjectId): bool
+    {
+        return $this->subjectEnrollments()
+            ->where('subject_id', $subjectId)
+            ->exists();
+    }
+
+
+    public function examAttempts()
+    {
+        return $this->hasMany(ExamAttempt::class);
+    }
+
+    public function hasActiveCourseSubscription($courseId): bool
+    {
+        return $this->courseEnrollments()
+            ->activeSubscription()
+            ->where('course_id', $courseId)
+            ->whereHas('payments', function ($query) {
+                $query->where('status', 'successful');
+            })
+            ->exists();
+    }
+
+    public function canAccessExam($examYearId): bool
+    {
+        $examYear = ExamYear::with([
+            'examBody.course',
+            'subject'
+        ])->find($examYearId);
+
+        if (!$examYear) {
+            return false;
+        }
+
+        return
+            $this->hasActiveCourseSubscription(
+                $examYear->examBody->course_id
+            )
+            &&
+            $this->enrolledInSubject(
+                $examYear->subject_id
+            );
+    }
 }

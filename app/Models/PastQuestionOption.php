@@ -18,6 +18,8 @@ class PastQuestionOption extends Model
         'is_correct' => 'boolean',
     ];
 
+    // protected $hidden = ['is_correct'];
+
     public function question()
     {
         return $this->belongsTo(PastQuestion::class, 'past_question_id');

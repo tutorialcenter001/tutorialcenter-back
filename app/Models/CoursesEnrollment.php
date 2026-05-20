@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -49,9 +50,32 @@ class CoursesEnrollment extends Model
     {
         return $this->hasMany(Payment::class, 'course_enrollment_id');
     }
-   
+
     public function subjectsEnrollments()
-{
-    return $this->hasMany(SubjectsEnrollment::class, 'course_enrollment_id');
-}
+    {
+        return $this->hasMany(SubjectsEnrollment::class, 'course_enrollment_id');
+    }
+
+    public function isActive(): bool
+    {
+        return
+            $this->status === 'active'
+            && (
+                is_null($this->end_date)
+                || $this->end_date->gte(now())
+            )
+            && $this->payments()
+            ->where('status', 'successful')
+            ->exists();
+    }
+
+    public function scopeActiveSubscription($query)
+    {
+        return $query
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now());
+            });
+    }
 }

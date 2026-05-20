@@ -10,3 +10,5 @@ Artisan::command('inspire', function () {
 
 
 Schedule::command('users:delete-unverified')->hourly();
+
+Schedule::command('exam:mark-abandoned')->everyTenMinutes();
