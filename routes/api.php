@@ -11,16 +11,20 @@ use App\Http\Controllers\ExamBodyController;
 use App\Http\Controllers\ExamYearController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\StudentExamController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PastQuestionController;
+use App\Http\Controllers\StudentExamResultController;
 use App\Http\Controllers\PastQuestionGroupController;
 use App\Http\Controllers\PastQuestionOptionController;
+use App\Http\Controllers\StudentExamQuestionController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 */
+
 Route::get('/courses', [CourseController::class, 'index']); // Public: List all active courses
 Route::get('/subjects', [SubjectController::class, 'index']); // Public: List all active subjects
 Route::post('/course/enrollment', [CourseController::class, 'courseEnroll']); // Public: Enroll in a course
@@ -84,6 +88,21 @@ Route::prefix('students')->middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
     // Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Student Exam Routes
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('exams')->group(function () {
+        Route::get('/available', [StudentExamController::class, 'available']); // List exams student can access
+        Route::post('/start/{examYear}', [StudentExamController::class, 'start']); // Start an exam
+        Route::get('/{attempt}/questions', [StudentExamQuestionController::class, 'questions']); // Get questions for an attempt
+        Route::post('/{attempt}/answer', [StudentExamQuestionController::class, 'submitAnswer']); // Save/update answer        
+        Route::post('/{attempt}/submit', [StudentExamResultController::class, 'submit']); // Submit and finish exam
+        Route::get('/results/history', [StudentExamResultController::class, 'history']); // Student attempt history
+    });
 });
 
 Route::prefix('students')->group(function () {
@@ -136,7 +155,6 @@ Route::prefix('staffs')->group(function () {
         Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
     });
-
 });
 
 /*
@@ -152,7 +170,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
         Route::post('/restore/{id}', [StaffController::class, 'restore']); // Restore a soft-deleted staff member
         Route::delete('/destroy/{id}', [StaffController::class, 'destroy']); // Soft delete a staff member
         Route::post('/active', [StaffController::class, 'activeStaffs']); // Test Route
-    }); 
+    });
 
     // Course Management
     Route::prefix('courses')->group(function () {
@@ -261,7 +279,3 @@ Route::prefix('advisor')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:
         Route::get('/schedule', [ClassesController::class, 'advisorClassesSchedule']); // Get advisor schedule with attendance status     
     });
 });
-
-
-
-
