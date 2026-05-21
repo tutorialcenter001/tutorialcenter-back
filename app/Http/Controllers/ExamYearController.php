@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ExamYear;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
+use App\Services\AdminNotificationService;
 
 class ExamYearController extends Controller
 {
@@ -69,6 +70,12 @@ class ExamYearController extends Controller
             'status' => $request->status ?? 'active',
         ]);
 
+        AdminNotificationService::notify(
+            'exam_year_created',
+            "Exam year created: {$examYear->year} for subject ID: {$examYear->subject_id} and exam body ID: {$examYear->exam_body_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+            ['exam_year_id' => $examYear->id]
+        );
+
         return response()->json([
             'message' => 'Exam year created successfully.',
             'data' => $examYear->load(['examBody.course', 'subject']),
@@ -117,15 +124,27 @@ class ExamYearController extends Controller
             'status' => $request->status ?? $examYear->status,
         ]);
 
+        AdminNotificationService::notify(
+            'exam_year_updated',
+            "Exam year updated: {$examYear->year} for subject ID: {$examYear->subject_id} and exam body ID: {$examYear->exam_body_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+            ['exam_year_id' => $examYear->id]
+        );
+
         return response()->json([
             'message' => 'Exam year updated successfully.',
             'data' => $examYear->load(['examBody.course', 'subject']),
         ]);
     }
 
-    public function destroy(ExamYear $examYear)
+    public function destroy(ExamYear $examYear, Request $request)
     {
         $examYear->delete();
+
+        AdminNotificationService::notify(
+            'exam_year_deleted',
+            "Exam year deleted: {$examYear->year} for subject ID: {$examYear->subject_id} and exam body ID: {$examYear->exam_body_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+            ['exam_year_id' => $examYear->id]
+        );
 
         return response()->json([
             'message' => 'Exam year deleted successfully.',

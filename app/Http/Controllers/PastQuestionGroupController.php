@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PastQuestionGroup;
 use Illuminate\Http\Request;
+use App\Models\PastQuestionGroup;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\AdminNotificationService;
 
 class PastQuestionGroupController extends Controller
 {
@@ -70,6 +71,13 @@ class PastQuestionGroupController extends Controller
                 'sort_order' => $request->sort_order ?? 0,
             ]);
             DB::commit();
+
+            AdminNotificationService::notify(
+                'past_question_group_created',
+                "Past question group created for exam year ID: {$group->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_group_id' => $group->id]
+            );
+
             return response()->json([
                 'message' => 'Past question group created successfully.',
                 'data' => $group,
@@ -125,6 +133,12 @@ class PastQuestionGroupController extends Controller
                 'sort_order' => $request->sort_order ?? $pastQuestionGroup->sort_order,
             ]);
 
+            AdminNotificationService::notify(
+                'past_question_group_updated',
+                "Past question group updated for exam year ID: {$pastQuestionGroup->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_group_id' => $pastQuestionGroup->id]
+            );
+
             DB::commit();
             return response()->json([
                 'message' => 'Past question group updated successfully.',
@@ -139,12 +153,17 @@ class PastQuestionGroupController extends Controller
         }
     }
 
-    public function destroy(PastQuestionGroup $pastQuestionGroup)
+    public function destroy(PastQuestionGroup $pastQuestionGroup, Request $request)
     {
         DB::beginTransaction();
         try {
             $pastQuestionGroup->delete();
             DB::commit();
+            AdminNotificationService::notify(
+                'past_question_group_deleted',
+                "Past question group deleted for exam year ID: {$pastQuestionGroup->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_group_id' => $pastQuestionGroup->id]
+            );
             return response()->json([
                 'message' => 'Past question group deleted successfully.',
             ]);
@@ -157,12 +176,17 @@ class PastQuestionGroupController extends Controller
         }
     }
 
-    public function restore(PastQuestionGroup $pastQuestionGroup)
+    public function restore(PastQuestionGroup $pastQuestionGroup, Request $request)
     {
         DB::beginTransaction();
         try {
             $pastQuestionGroup->restore();
             DB::commit();
+            AdminNotificationService::notify(
+                'past_question_group_restored',
+                "Past question group restored for exam year ID: {$pastQuestionGroup->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_group_id' => $pastQuestionGroup->id]
+            );
             return response()->json([
                 'message' => 'Past question group restored successfully.',
                 'data' => $pastQuestionGroup,

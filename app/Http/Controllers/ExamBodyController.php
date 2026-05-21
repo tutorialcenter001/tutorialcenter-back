@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use AddressInfo;
 use App\Models\ExamBody;
-use Illuminate\Support\Facades\Validator;;
-
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Services\AdminNotificationService;
 
 class ExamBodyController extends Controller
 {
@@ -68,6 +69,12 @@ class ExamBodyController extends Controller
                 'status' => $request->status ?? 'active',
             ]);
 
+            AdminNotificationService::notify(
+                'exam_body_created',
+                "Exam body created: {$examBody->name} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['exam_body_id' => $examBody->id]
+            );
+
             return response()->json([
                 'message' => 'Exam body created successfully.',
                 'data' => $examBody,
@@ -124,6 +131,12 @@ class ExamBodyController extends Controller
                 'status' => $request->status ?? $examBody->status,
             ]);
 
+            AdminNotificationService::notify(
+                'exam_body_updated',
+                "Exam body updated: {$examBody->name} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['exam_body_id' => $examBody->id]
+            );
+
             return response()->json([
                 'message' => 'Exam body updated successfully.',
                 'data' => $examBody,
@@ -138,10 +151,16 @@ class ExamBodyController extends Controller
     /**
      * Remove the specified resource.
      */
-    public function destroy(ExamBody $examBody)
+    public function destroy(ExamBody $examBody, Request $request)
     {
         try {
             $examBody->delete();
+
+            AdminNotificationService::notify(
+                'exam_body_deleted',
+                "Exam body deleted: {$examBody->name} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['exam_body_id' => $examBody->id]
+            );
 
             return response()->json([
                 'message' => 'Exam body deleted successfully.',

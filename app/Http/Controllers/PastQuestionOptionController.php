@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PastQuestionOption;
 use Illuminate\Http\Request;
+use App\Models\PastQuestionOption;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\AdminNotificationService;
 
 class PastQuestionOptionController extends Controller
 {
@@ -34,6 +35,11 @@ class PastQuestionOptionController extends Controller
                 'sort_order' => $request->sort_order ?? $pastQuestionOption->sort_order,
             ]);
             DB::commit();
+            AdminNotificationService::notify(
+                'past_question_option_updated',
+                "Past question option updated for past question group ID: {$pastQuestionOption->past_question_group_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_option_id' => $pastQuestionOption->id]
+            );
             return response()->json([
                 'message' => 'Option updated successfully.',
                 'data' => $pastQuestionOption,
@@ -47,12 +53,17 @@ class PastQuestionOptionController extends Controller
         }
     }
 
-    public function destroy(PastQuestionOption $pastQuestionOption)
+    public function destroy(PastQuestionOption $pastQuestionOption, Request $request)
     {
         DB::beginTransaction();
         try {
             $pastQuestionOption->delete();
             DB::commit();
+            AdminNotificationService::notify(
+                'past_question_option_deleted',
+                "Past question option deleted for past question group ID: {$pastQuestionOption->past_question_group_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_option_id' => $pastQuestionOption->id]
+            );
 
             return response()->json([
                 'message' => 'Option deleted successfully.',
@@ -66,12 +77,17 @@ class PastQuestionOptionController extends Controller
         }
     }
 
-    public function restore(PastQuestionOption $pastQuestionOption)
+    public function restore(PastQuestionOption $pastQuestionOption, Request $request)
     {
         DB::beginTransaction();
         try {
             $pastQuestionOption->restore();
             DB::commit();
+            AdminNotificationService::notify(
+                'past_question_option_restored',
+                "Past question option restored for past question group ID: {$pastQuestionOption->past_question_group_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_option_id' => $pastQuestionOption->id]
+            );
             return response()->json([
                 'message' => 'Option restored successfully.',
                 'data' => $pastQuestionOption,

@@ -6,6 +6,7 @@ use App\Models\PastQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\AdminNotificationService;
 
 class PastQuestionController extends Controller
 {
@@ -116,6 +117,13 @@ class PastQuestionController extends Controller
                 }
             }
             DB::commit();
+
+            AdminNotificationService::notify(
+                'past_question_created',
+                "Past question created for exam year ID: {$question->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_id' => $question->id]
+            );
+
             return response()->json([
                 'message' => 'Past question created successfully.',
                 'data' => $question->load(['examYear.examBody', 'examYear.subject', 'group', 'options', 'files']),
@@ -212,6 +220,14 @@ class PastQuestionController extends Controller
                 }
             }
             DB::commit();
+
+            AdminNotificationService::notify(
+                'past_question_updated',
+                "Past question updated for exam year ID: {$pastQuestion->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_id' => $pastQuestion->id]
+            );
+
+
             return response()->json([
                 'message' => 'Past question updated successfully.',
                 'data' => $pastQuestion->load(['examYear.examBody', 'examYear.subject', 'group', 'options', 'files']),
@@ -225,12 +241,17 @@ class PastQuestionController extends Controller
         }
     }
 
-    public function destroy(PastQuestion $pastQuestion)
+    public function destroy(PastQuestion $pastQuestion, Request $request)
     {
         DB::beginTransaction();
         try {
             $pastQuestion->delete();
             DB::commit();
+            AdminNotificationService::notify(
+                'past_question_deleted',
+                "Past question deleted for exam year ID: {$pastQuestion->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_id' => $pastQuestion->id]
+            );
             return response()->json([
                 'message' => 'Past question deleted successfully.',
             ], 200);
@@ -243,12 +264,17 @@ class PastQuestionController extends Controller
         }
     }
 
-    public function restore(PastQuestion $pastQuestion)
+    public function restore(PastQuestion $pastQuestion, Request $request)
     {
         DB::beginTransaction();
         try {
             $pastQuestion->restore();
             DB::commit();
+            AdminNotificationService::notify(
+                'past_question_restored',
+                "Past question restored for exam year ID: {$pastQuestion->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['past_question_id' => $pastQuestion->id]
+            );
             return response()->json([
                 'message' => 'Past question restored successfully.',
                 'data' => $pastQuestion->load(['examYear.examBody', 'examYear.subject', 'group', 'options', 'files']),

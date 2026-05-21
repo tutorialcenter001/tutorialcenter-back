@@ -2,21 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ClassAttendance;
-use App\Models\Classes;
-use App\Models\ClassSession;
 use App\Models\Course;
-use App\Models\Payment;
 use App\Models\Student;
-use App\Models\CoursesEnrollment;
-use App\Models\Subject;
-use App\Models\SubjectsEnrollment;
-use App\Services\AdminNotificationService;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\CoursesEnrollment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\AdminNotificationService;
 
 class CourseController extends Controller
 {
@@ -128,6 +122,12 @@ class CourseController extends Controller
             }
 
             $course->update($data);
+            
+            AdminNotificationService::notify(
+                'course_updated',
+                "Course updated: {$course->title} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['course_id' => $course->id]
+            );
 
             DB::commit();
 
@@ -150,7 +150,7 @@ class CourseController extends Controller
     /**
      * ADMIN: Soft delete course
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $id, Request $request): JsonResponse
     {
         $course = Course::find($id);
         if (!$course) {
@@ -162,6 +162,13 @@ class CourseController extends Controller
 
         try {
             $course->delete();
+
+            AdminNotificationService::notify(
+                'course_deleted',
+                "Course deleted: {$course->title} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['course_id' => $course->id]
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'Course deleted successfully.',
@@ -178,7 +185,7 @@ class CourseController extends Controller
     /**
      * ADMIN: Restore soft-deleted course
      */
-    public function restore(int $id): JsonResponse
+    public function restore(int $id, Request $request): JsonResponse
     {
         $course = Course::onlyTrashed()->find($id);
         if (!$course) {
@@ -190,6 +197,11 @@ class CourseController extends Controller
 
         try {
             $course->restore();
+            AdminNotificationService::notify(
+                'course_restored',
+                "Course restored: {$course->title} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['course_id' => $course->id]
+            );
             return response()->json([
                 'success' => true,
                 'message' => 'Course restored successfully.',
@@ -362,7 +374,7 @@ class CourseController extends Controller
         } catch (\Throwable $e) {
 
             // VERY IMPORTANT for debugging
-            \Log::error($e);
+            // \Log::error($e);
 
             return response()->json([
                 'success' => false,
