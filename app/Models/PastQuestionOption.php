@@ -16,6 +16,8 @@ class PastQuestionOption extends Model
 
     protected $casts = [
         'is_correct' => 'boolean',
+        'id' => 'integer',
+        'past_question_id' => 'integer',
     ];
 
     // protected $hidden = ['is_correct'];
