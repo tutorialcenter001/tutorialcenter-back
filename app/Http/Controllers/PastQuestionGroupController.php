@@ -98,8 +98,10 @@ class PastQuestionGroupController extends Controller
         );
     }
 
-    public function update(Request $request, PastQuestionGroup $pastQuestionGroup)
+    public function update(Request $request, $id)
     {
+        $pastQuestionGroup = PastQuestionGroup::findOrFail($id);
+
         $validator = Validator::make($request->all(), [
             'exam_year_id' => ['required', 'exists:exam_years,id'],
             'title' => ['nullable', 'string', 'max:255'],
@@ -133,6 +135,8 @@ class PastQuestionGroupController extends Controller
                 'sort_order' => $request->sort_order ?? $pastQuestionGroup->sort_order,
             ]);
 
+            $pastQuestionGroup->refresh();
+
             AdminNotificationService::notify(
                 'past_question_group_updated',
                 "Past question group updated for exam year ID: {$pastQuestionGroup->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
@@ -142,7 +146,7 @@ class PastQuestionGroupController extends Controller
             DB::commit();
             return response()->json([
                 'message' => 'Past question group updated successfully.',
-                'data' => $pastQuestionGroup,
+                'pastQuestionGroup' => $pastQuestionGroup,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

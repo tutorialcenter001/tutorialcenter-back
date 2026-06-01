@@ -89,8 +89,9 @@ class ExamYearController extends Controller
         );
     }
 
-    public function update(Request $request, ExamYear $examYear)
+    public function update(Request $request, $id)
     {
+        $examYear = ExamYear::findOrFail($id);
         $validator = Validator::make($request->all(), [
             'exam_body_id' => ['required', 'exists:exam_bodies,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
@@ -132,7 +133,7 @@ class ExamYearController extends Controller
 
         return response()->json([
             'message' => 'Exam year updated successfully.',
-            'data' => $examYear->load(['examBody.course', 'subject']),
+            'examYear' => $examYear->load(['examBody.course', 'subject']),
         ]);
     }
 

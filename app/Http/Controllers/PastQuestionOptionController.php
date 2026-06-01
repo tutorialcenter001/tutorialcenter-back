@@ -10,8 +10,9 @@ use App\Services\AdminNotificationService;
 
 class PastQuestionOptionController extends Controller
 {
-    public function update(Request $request, PastQuestionOption $pastQuestionOption)
+    public function update(Request $request, $id)
     {
+        $pastQuestionOption = PastQuestionOption::findOrFail($id);
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->all(), [
@@ -34,6 +35,7 @@ class PastQuestionOptionController extends Controller
                 'is_correct' => $request->is_correct ?? false,
                 'sort_order' => $request->sort_order ?? $pastQuestionOption->sort_order,
             ]);
+            $pastQuestionOption->refresh();
             DB::commit();
             AdminNotificationService::notify(
                 'past_question_option_updated',
@@ -42,7 +44,7 @@ class PastQuestionOptionController extends Controller
             );
             return response()->json([
                 'message' => 'Option updated successfully.',
-                'data' => $pastQuestionOption,
+                'pastQuestionOption' => $pastQuestionOption,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

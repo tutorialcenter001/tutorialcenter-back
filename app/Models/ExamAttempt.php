@@ -25,9 +25,17 @@ class ExamAttempt extends Model
     ];
 
     protected $casts = [
+        'id' => 'integer',
+        'student_id' => 'integer',
+        'exam_year_id' => 'integer',
         'started_at' => 'datetime',
         'submitted_at' => 'datetime',
     ];
+
+    // protected $casts = [
+    //     'started_at' => 'datetime',
+    //     'submitted_at' => 'datetime',
+    // ];
 
     public function student()
     {

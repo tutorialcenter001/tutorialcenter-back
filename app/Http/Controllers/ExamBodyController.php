@@ -104,8 +104,10 @@ class ExamBodyController extends Controller
     /**
      * Update the specified resource.
      */
-    public function update(Request $request, ExamBody $examBody)
+    // public function update(Request $request, ExamBody $examBody)
+    public function update(Request $request, $id)
     {
+        $examBody = ExamBody::findOrFail($id);
         $validator = Validator::make($request->all(), [
             'name' => [
                 'required',
@@ -124,12 +126,14 @@ class ExamBodyController extends Controller
             ], 422);
         }
         try {
+
             $examBody->update([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'course_id' => $request->course_id,
                 'status' => $request->status ?? $examBody->status,
             ]);
+            $examBody->refresh();
 
             AdminNotificationService::notify(
                 'exam_body_updated',
@@ -139,7 +143,7 @@ class ExamBodyController extends Controller
 
             return response()->json([
                 'message' => 'Exam body updated successfully.',
-                'data' => $examBody,
+                'examBody' => $examBody,
             ]);
         } catch (\Exception $e) {
             return response()->json([

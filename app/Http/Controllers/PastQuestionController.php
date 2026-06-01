@@ -150,8 +150,9 @@ class PastQuestionController extends Controller
         );
     }
 
-    public function update(Request $request, PastQuestion $pastQuestion)
+    public function update(Request $request, $id)
     {
+        $pastQuestion = PastQuestion::findOrFail($id);
         $validator = Validator::make($request->all(), [
             'exam_year_id' => ['required', 'exists:exam_years,id'],
             'past_question_group_id' => ['nullable', 'exists:past_question_groups,id'],
@@ -230,7 +231,7 @@ class PastQuestionController extends Controller
 
             return response()->json([
                 'message' => 'Past question updated successfully.',
-                'data' => $pastQuestion->load(['examYear.examBody', 'examYear.subject', 'group', 'options', 'files']),
+                'pastQuestion' => $pastQuestion->load(['examYear.examBody', 'examYear.subject', 'group', 'options', 'files']),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
