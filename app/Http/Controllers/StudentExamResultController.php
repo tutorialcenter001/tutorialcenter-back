@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ExamAttempt;
 use App\Services\ExamService;
+use App\Services\StudentNotificationService;
 
 class StudentExamResultController extends Controller
 {
@@ -23,6 +24,8 @@ class StudentExamResultController extends Controller
             ->finalizeAttempt(
                 $attempt
             );
+
+        StudentNotificationService::notify($attempt->student, 'Exam Submitted', ["You have submitted the exam: {$attempt->examYear->examBody->name} - {$attempt->examYear->subject->name}. Your score is: {$attempt->score}"]);
 
         return response()->json([
             'success' => true,
