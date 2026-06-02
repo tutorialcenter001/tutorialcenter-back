@@ -1162,7 +1162,6 @@ class StudentController extends Controller
         }
     }
 
-
     /**
      * Send password reset email
      **/
@@ -1294,7 +1293,6 @@ class StudentController extends Controller
         }
     }
 
-
     /*
      * (Admin) Delete staff using soft delete
      */
@@ -1338,7 +1336,6 @@ class StudentController extends Controller
         }
     }
 
-
     /*
      * Fetch all students (for admin use)
      */
@@ -1350,7 +1347,6 @@ class StudentController extends Controller
             'students' => $students,
         ], 200);
     }
-
 
     /*
      * Fetch single student by ID (for admin use)

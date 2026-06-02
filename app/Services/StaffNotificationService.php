@@ -2,8 +2,8 @@
 namespace App\Services;
 
 use App\Models\Staff;
-use App\Notifications\StaffActivityNotification;
 use Illuminate\Support\Facades\Notification;
+use App\Notifications\StaffActivityNotification;
 
 class StaffNotificationService
 {

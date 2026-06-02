@@ -10,6 +10,7 @@ use App\Services\AdminNotificationService;
 
 class PastQuestionController extends Controller
 {
+    // List past questions with optional filtering by exam year, group, type, and status
     public function index(Request $request)
     {
         try {
@@ -49,6 +50,7 @@ class PastQuestionController extends Controller
         }
     }
 
+    // Create new past question
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -119,7 +121,7 @@ class PastQuestionController extends Controller
             DB::commit();
 
             AdminNotificationService::notify(
-                'past_question_created',
+                'Past Question Created',
                 "Past question created for exam year ID: {$question->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['past_question_id' => $question->id]
             );
@@ -137,6 +139,7 @@ class PastQuestionController extends Controller
         }
     }
 
+    // Show single past question with questions and options
     public function show(PastQuestion $pastQuestion)
     {
         return response()->json(
@@ -150,6 +153,7 @@ class PastQuestionController extends Controller
         );
     }
 
+    // Update past question
     public function update(Request $request, $id)
     {
         $pastQuestion = PastQuestion::findOrFail($id);
@@ -223,7 +227,7 @@ class PastQuestionController extends Controller
             DB::commit();
 
             AdminNotificationService::notify(
-                'past_question_updated',
+                'Past Question Updated',
                 "Past question updated for exam year ID: {$pastQuestion->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['past_question_id' => $pastQuestion->id]
             );
@@ -242,6 +246,7 @@ class PastQuestionController extends Controller
         }
     }
 
+    // Soft delete past question
     public function destroy(PastQuestion $pastQuestion, Request $request)
     {
         DB::beginTransaction();
@@ -249,7 +254,7 @@ class PastQuestionController extends Controller
             $pastQuestion->delete();
             DB::commit();
             AdminNotificationService::notify(
-                'past_question_deleted',
+                'Past Question Deleted',
                 "Past question deleted for exam year ID: {$pastQuestion->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['past_question_id' => $pastQuestion->id]
             );
@@ -265,6 +270,7 @@ class PastQuestionController extends Controller
         }
     }
 
+    // Restore soft deleted past question
     public function restore(PastQuestion $pastQuestion, Request $request)
     {
         DB::beginTransaction();
@@ -272,7 +278,7 @@ class PastQuestionController extends Controller
             $pastQuestion->restore();
             DB::commit();
             AdminNotificationService::notify(
-                'past_question_restored',
+                'Past Question Restored',
                 "Past question restored for exam year ID: {$pastQuestion->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['past_question_id' => $pastQuestion->id]
             );
@@ -289,6 +295,7 @@ class PastQuestionController extends Controller
         }
     }
 
+    // Helper function to determine file type based on MIME type
     private function getFileType(string $mimeType): string
     {
         try {

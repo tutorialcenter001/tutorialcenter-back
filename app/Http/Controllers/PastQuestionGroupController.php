@@ -10,6 +10,7 @@ use App\Services\AdminNotificationService;
 
 class PastQuestionGroupController extends Controller
 {
+    // List past question groups with optional filtering by exam year and type
     public function index(Request $request)
     {
         try {
@@ -36,6 +37,7 @@ class PastQuestionGroupController extends Controller
         }
     }
 
+    // Create new past question group
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -73,7 +75,7 @@ class PastQuestionGroupController extends Controller
             DB::commit();
 
             AdminNotificationService::notify(
-                'past_question_group_created',
+                'Past Question Group Created',
                 "Past question group created for exam year ID: {$group->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['past_question_group_id' => $group->id]
             );
@@ -91,6 +93,7 @@ class PastQuestionGroupController extends Controller
         }
     }
 
+    // Show single past question group with questions and options
     public function show(PastQuestionGroup $pastQuestionGroup)
     {
         return response()->json(
@@ -98,6 +101,7 @@ class PastQuestionGroupController extends Controller
         );
     }
 
+    // Update past question group
     public function update(Request $request, $id)
     {
         $pastQuestionGroup = PastQuestionGroup::findOrFail($id);
@@ -138,7 +142,7 @@ class PastQuestionGroupController extends Controller
             $pastQuestionGroup->refresh();
 
             AdminNotificationService::notify(
-                'past_question_group_updated',
+                'Past Question Group Updated',
                 "Past question group updated for exam year ID: {$pastQuestionGroup->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['past_question_group_id' => $pastQuestionGroup->id]
             );
@@ -157,6 +161,7 @@ class PastQuestionGroupController extends Controller
         }
     }
 
+    // Soft delete past question group
     public function destroy(PastQuestionGroup $pastQuestionGroup, Request $request)
     {
         DB::beginTransaction();
@@ -164,7 +169,7 @@ class PastQuestionGroupController extends Controller
             $pastQuestionGroup->delete();
             DB::commit();
             AdminNotificationService::notify(
-                'past_question_group_deleted',
+                'Past Question Group Deleted',
                 "Past question group deleted for exam year ID: {$pastQuestionGroup->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['past_question_group_id' => $pastQuestionGroup->id]
             );
@@ -180,6 +185,7 @@ class PastQuestionGroupController extends Controller
         }
     }
 
+    // Restore a soft-deleted past question group
     public function restore(PastQuestionGroup $pastQuestionGroup, Request $request)
     {
         DB::beginTransaction();
@@ -187,7 +193,7 @@ class PastQuestionGroupController extends Controller
             $pastQuestionGroup->restore();
             DB::commit();
             AdminNotificationService::notify(
-                'past_question_group_restored',
+                'Past Question Group Restored',
                 "Past question group restored for exam year ID: {$pastQuestionGroup->exam_year_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['past_question_group_id' => $pastQuestionGroup->id]
             );
