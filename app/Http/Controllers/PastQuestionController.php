@@ -247,10 +247,11 @@ class PastQuestionController extends Controller
     }
 
     // Soft delete past question
-    public function destroy(PastQuestion $pastQuestion, Request $request)
+    public function destroy(PastQuestion $pastQuestion, Request $request, $id)
     {
         DB::beginTransaction();
         try {
+            $pastQuestion = PastQuestion::findOrFail($id);
             $pastQuestion->delete();
             DB::commit();
             AdminNotificationService::notify(
@@ -271,10 +272,11 @@ class PastQuestionController extends Controller
     }
 
     // Restore soft deleted past question
-    public function restore(PastQuestion $pastQuestion, Request $request)
+    public function restore(PastQuestion $pastQuestion, Request $request, $id)
     {
         DB::beginTransaction();
         try {
+            $pastQuestion = PastQuestion::findOrFail($id);
             $pastQuestion->restore();
             DB::commit();
             AdminNotificationService::notify(

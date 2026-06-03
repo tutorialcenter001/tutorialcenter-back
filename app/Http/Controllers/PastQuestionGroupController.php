@@ -94,8 +94,9 @@ class PastQuestionGroupController extends Controller
     }
 
     // Show single past question group with questions and options
-    public function show(PastQuestionGroup $pastQuestionGroup)
+    public function show(PastQuestionGroup $pastQuestionGroup, $id)
     {
+        $pastQuestionGroup = PastQuestionGroup::findOrFail($id);
         return response()->json(
             $pastQuestionGroup->load(['examYear.examBody', 'examYear.subject', 'questions.options', 'questions.files'])
         );
@@ -162,10 +163,11 @@ class PastQuestionGroupController extends Controller
     }
 
     // Soft delete past question group
-    public function destroy(PastQuestionGroup $pastQuestionGroup, Request $request)
+    public function destroy(PastQuestionGroup $pastQuestionGroup, Request $request, $id)
     {
         DB::beginTransaction();
         try {
+            $pastQuestionGroup = PastQuestionGroup::findOrFail($id);
             $pastQuestionGroup->delete();
             DB::commit();
             AdminNotificationService::notify(
@@ -186,10 +188,11 @@ class PastQuestionGroupController extends Controller
     }
 
     // Restore a soft-deleted past question group
-    public function restore(PastQuestionGroup $pastQuestionGroup, Request $request)
+    public function restore(PastQuestionGroup $pastQuestionGroup, Request $request, $id)
     {
         DB::beginTransaction();
         try {
+            $pastQuestionGroup = PastQuestionGroup::findOrFail($id);
             $pastQuestionGroup->restore();
             DB::commit();
             AdminNotificationService::notify(

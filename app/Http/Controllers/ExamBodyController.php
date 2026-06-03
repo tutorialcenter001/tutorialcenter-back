@@ -155,9 +155,10 @@ class ExamBodyController extends Controller
     /**
      * Remove the specified resource.
      */
-    public function destroy(ExamBody $examBody, Request $request)
+    public function destroy(ExamBody $examBody, Request $request, $id)
     {
         try {
+            $examBody = ExamBody::findOrFail($id);
             $examBody->delete();
 
             AdminNotificationService::notify(

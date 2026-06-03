@@ -82,11 +82,18 @@ class ExamYearController extends Controller
         ], 201);
     }
 
-    public function show(ExamYear $examYear)
+    public function show(ExamYear $examYear, $id)
     {
-        return response()->json(
-            $examYear->load(['examBody.course', 'subject'])
-        );
+        try {
+            $examYear = ExamYear::findOrFail($id);
+            return response()->json(
+                $examYear->load(['examBody.course', 'subject'])
+            );
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Unauthorized to view exam year.',
+            ], 403);
+        }
     }
 
     public function update(Request $request, $id)
@@ -137,18 +144,25 @@ class ExamYearController extends Controller
         ]);
     }
 
-    public function destroy(ExamYear $examYear, Request $request)
+    public function destroy(ExamYear $examYear, Request $request, $id)
     {
-        $examYear->delete();
+        try {
+            $examYear = ExamYear::findOrFail($id);
+            $examYear->delete();
 
-        AdminNotificationService::notify(
-            'exam_year_deleted',
-            "Exam year deleted: {$examYear->year} for subject ID: {$examYear->subject_id} and exam body ID: {$examYear->exam_body_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
-            ['exam_year_id' => $examYear->id]
-        );
+            AdminNotificationService::notify(
+                'exam_year_deleted',
+                "Exam year deleted: {$examYear->year} for subject ID: {$examYear->subject_id} and exam body ID: {$examYear->exam_body_id} by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
+                ['exam_year_id' => $examYear->id]
+            );
 
-        return response()->json([
-            'message' => 'Exam year deleted successfully.',
-        ]);
+            return response()->json([
+                'message' => 'Exam year deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Unauthorized to delete exam year.',
+            ], 403);
+        }
     }
 }

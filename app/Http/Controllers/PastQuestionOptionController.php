@@ -57,10 +57,11 @@ class PastQuestionOptionController extends Controller
     }
 
     // Soft delete a past question option
-    public function destroy(PastQuestionOption $pastQuestionOption, Request $request)
+    public function destroy(PastQuestionOption $pastQuestionOption, Request $request, $id)
     {
         DB::beginTransaction();
         try {
+            $pastQuestionOption = PastQuestionOption::findOrFail($id);
             $pastQuestionOption->delete();
             DB::commit();
             AdminNotificationService::notify(
@@ -82,10 +83,11 @@ class PastQuestionOptionController extends Controller
     }
 
     // Restore a soft-deleted past question option
-    public function restore(PastQuestionOption $pastQuestionOption, Request $request)
+    public function restore(PastQuestionOption $pastQuestionOption, Request $request, $id)
     {
         DB::beginTransaction();
         try {
+            $pastQuestionOption = PastQuestionOption::findOrFail($id);
             $pastQuestionOption->restore();
             DB::commit();
             AdminNotificationService::notify(
