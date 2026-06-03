@@ -25,7 +25,7 @@ class StudentExamQuestionController extends Controller
             ->examYear
             ->pastQuestions()
             ->with([
-                'options:id,past_question_id,label,option_text'
+                'options:id,past_question_id,label,option_text', 'group'
             ])
             ->get();
 
