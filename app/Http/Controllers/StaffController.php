@@ -393,7 +393,7 @@ class StaffController extends Controller
             DB::commit();
 
             AdminNotificationService::notify(
-                'staff_registration',
+                'Staff Registered',
                 "New staff registered: {$staff->firstname} {$staff->surname} ({$staff->staff_id})",
                 ['staff_id' => $staff->id]
             );
@@ -428,7 +428,7 @@ class StaffController extends Controller
             $staff->delete();
 
             AdminNotificationService::notify(
-                'staff_suspended',
+                'Staff Suspended',
                 "Staff suspended: {$staff->firstname} {$staff->surname} ({$staff->staff_id}) by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['staff_id' => $staff->id]
             );
@@ -455,7 +455,7 @@ class StaffController extends Controller
             $staff->restore();
 
             AdminNotificationService::notify(
-                'staff_restored',
+                'Staff Restored',
                 "Staff restored: {$staff->firstname} {$staff->surname} ({$staff->staff_id}) by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['staff_id' => $staff->id]
             );
@@ -524,7 +524,7 @@ class StaffController extends Controller
             $staff->save();
 
             AdminNotificationService::notify(
-                'staff_updated',
+                'Staff Updated',
                 "Staff details updated for: {$staff->firstname} {$staff->surname} ({$staff->staff_id}) by user: {$request->user()->staff_id}, {$request->user()->firstname} {$request->user()->surname}, {$request->user()->email}",
                 ['staff_id' => $staff->id]
             );
