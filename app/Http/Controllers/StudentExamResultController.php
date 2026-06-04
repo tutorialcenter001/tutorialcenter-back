@@ -45,4 +45,30 @@ class StudentExamResultController extends Controller
                 ->paginate()
         ]);
     }
+
+    public function review(
+        ExamAttempt $attempt,
+        ExamService $service,
+        Request $request
+    ) {
+        if (
+            $attempt->student_id !==
+            $request->user()->id
+        ) {
+            abort(403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'attempt' => [
+                'id' => $attempt->id,
+                'score' => $attempt->score,
+                'percentage' => $attempt->percentage,
+                'correct_answers' => $attempt->correct_answers,
+                'wrong_answers' => $attempt->wrong_answers,
+            ],
+            'questions' =>
+            $service->reviewAttempt($attempt),
+        ]);
+    }
 }

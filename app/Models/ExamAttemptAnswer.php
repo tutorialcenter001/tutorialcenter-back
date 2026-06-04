@@ -10,7 +10,6 @@ class ExamAttemptAnswer extends Model
         'exam_attempt_id',
         'past_question_id',
         'past_question_option_id',
-        // 'is_correct',
     ];
 
     public function attempt()

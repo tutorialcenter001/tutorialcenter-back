@@ -32,11 +32,6 @@ class ExamAttempt extends Model
         'submitted_at' => 'datetime',
     ];
 
-    // protected $casts = [
-    //     'started_at' => 'datetime',
-    //     'submitted_at' => 'datetime',
-    // ];
-
     public function student()
     {
         return $this->belongsTo(Student::class);

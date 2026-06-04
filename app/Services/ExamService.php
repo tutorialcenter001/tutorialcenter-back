@@ -144,4 +144,83 @@ class ExamService
 
         return $attempt;
     }
+
+    public function reviewAttempt(
+        ExamAttempt $attempt
+    ) {
+        return $attempt->answers()
+            ->with([
+                'question.options',
+                'option'
+            ])
+            ->get()
+            ->map(function ($answer) {
+
+                $correctOption = $answer->question
+                    ->options
+                    ->firstWhere(
+                        'is_correct',
+                        true
+                    );
+
+                return [
+
+                    'question_id' =>
+                    $answer->question->id,
+
+                    'question_number' =>
+                    $answer->question->question_number,
+
+                    'question' =>
+                    $answer->question->question,
+
+                    'explanation' =>
+                    $answer->question->explanation,
+
+                    'is_correct' =>
+                    $answer->is_correct,
+
+                    'student_answer' => [
+                        'id' =>
+                        $answer->option?->id,
+
+                        'label' =>
+                        $answer->option?->label,
+
+                        'text' =>
+                        $answer->option?->option_text,
+                    ],
+
+                    'correct_answer' => [
+                        'id' =>
+                        $correctOption?->id,
+
+                        'label' =>
+                        $correctOption?->label,
+
+                        'text' =>
+                        $correctOption?->option_text,
+                    ],
+
+                    'options' => $answer->question
+                        ->options
+                        ->map(function ($option) use ($answer) {
+
+                            return [
+                                'id' => $option->id,
+
+                                'label' => $option->label,
+
+                                'text' => $option->option_text,
+
+                                'is_correct' => $option->is_correct,
+
+                                'selected' =>
+                                $option->id ===
+                                    $answer->past_question_option_id,
+                            ];
+                        }),
+                ];
+            });
+    }
 }
