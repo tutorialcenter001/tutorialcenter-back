@@ -49,7 +49,8 @@ class StudentExamResultController extends Controller
     public function review(
         ExamAttempt $attempt,
         ExamService $service,
-        Request $request
+        Request $request,
+        // $attempt,
     ) {
         if (
             $attempt->student_id !==
