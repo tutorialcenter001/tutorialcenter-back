@@ -14,16 +14,13 @@ class PastQuestionController extends Controller
     public function index(Request $request)
     {
         try {
-            // $query = PastQuestion::with([
-            //     'examYear.examBody',
-            //     'examYear.subject',
-            //     'group',
-            //     'options',
-            //     'files',
-            // ]);
-
-            // $query = PastQuestion::query();
-            $query = PastQuestion::with('examYear');
+            $query = PastQuestion::with([
+                'examYear.examBody',
+                'examYear.subject',
+                'group',
+                'options',
+                'files',
+            ]);
 
             if ($request->filled('exam_year_id')) {
                 $query->where('exam_year_id', $request->exam_year_id);
@@ -42,14 +39,16 @@ class PastQuestionController extends Controller
             }
 
             $questions = $query
-                ->get();
-                // ->orderBy('question_number')->get();
+                // ->get();
+                ->orderBy('question_number')->get();
                 // ->paginate(20);
             return response()->json(['questions' => $questions], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while fetching past questions.',
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ], 500);
         }
     }
