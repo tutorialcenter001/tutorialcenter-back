@@ -10,7 +10,49 @@ use App\Services\AdminNotificationService;
 
 class PastQuestionController extends Controller
 {
-    // List past questions with optional filtering by exam year, group, type, and status
+    // // List past questions with optional filtering by exam year, group, type, and status
+    // public function index(Request $request)
+    // {
+    //     try {
+    //         $query = PastQuestion::with([
+    //             'examYear.examBody',
+    //             'examYear.subject',
+    //             'group',
+    //             'options',
+    //             'files',
+    //         ]);
+
+    //         if ($request->filled('exam_year_id')) {
+    //             $query->where('exam_year_id', $request->exam_year_id);
+    //         }
+
+    //         if ($request->filled('past_question_group_id')) {
+    //             $query->where('past_question_group_id', $request->past_question_group_id);
+    //         }
+
+    //         if ($request->filled('question_type')) {
+    //             $query->where('question_type', $request->question_type);
+    //         }
+
+    //         if ($request->filled('status')) {
+    //             $query->where('status', $request->status);
+    //         }
+
+    //         $questions = $query
+    //             // ->get();
+    //             ->orderBy('question_number')->get();
+    //             // ->paginate(20);
+    //         return response()->json(['questions' => $questions], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'An error occurred while fetching past questions.',
+    //             'error' => $e->getMessage(),
+    //             'file' => $e->getFile(),
+    //             'line' => $e->getLine(),
+    //         ], 500);
+    //     }
+    // }
+
     public function index(Request $request)
     {
         try {
@@ -39,7 +81,6 @@ class PastQuestionController extends Controller
             }
 
             $questions = $query
-                // ->get();
                 ->orderBy('question_number')->get();
                 // ->paginate(20);
             return response()->json(['questions' => $questions], 200);
@@ -47,8 +88,6 @@ class PastQuestionController extends Controller
             return response()->json([
                 'message' => 'An error occurred while fetching past questions.',
                 'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
             ], 500);
         }
     }
