@@ -22,7 +22,8 @@ class PastQuestionController extends Controller
             //     'files',
             // ]);
 
-            $query = PastQuestion::query();
+            // $query = PastQuestion::query();
+            $query = PastQuestion::with('examYear');
 
             if ($request->filled('exam_year_id')) {
                 $query->where('exam_year_id', $request->exam_year_id);
