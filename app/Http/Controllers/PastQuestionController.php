@@ -60,7 +60,7 @@ class PastQuestionController extends Controller
             'exam_year_id' => ['required', 'exists:exam_years,id'],
             'past_question_group_id' => ['nullable', 'exists:past_question_groups,id'],
 
-            'question_number' => ['nullable', 'string', 'max:50'],
+            'question_number' => ['nullable', 'integer', 'min:1'],
             'question' => ['required', 'string'],
             'question_type' => ['nullable', 'in:multiple_choice,true_false,short_answer,essay'],
             'marks' => ['nullable', 'integer', 'min:1'],
@@ -164,7 +164,7 @@ class PastQuestionController extends Controller
             'exam_year_id' => ['required', 'exists:exam_years,id'],
             'past_question_group_id' => ['nullable', 'exists:past_question_groups,id'],
 
-            'question_number' => ['nullable', 'string', 'max:50'],
+            'question_number' => ['nullable', 'integer', 'min:1'],
             'question' => ['required', 'string'],
             'question_type' => ['nullable', 'in:multiple_choice,true_false,short_answer,essay'],
             'marks' => ['nullable', 'integer', 'min:1'],
