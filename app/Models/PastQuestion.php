@@ -23,8 +23,8 @@ class PastQuestion extends Model
     protected $casts = [
         'id' => 'integer',
         'exam_year_id' => 'integer',
-        // 'question_number' => 'integer',
-        'question_number' => 'string',
+        'question_number' => 'integer',
+        // 'question_number' => 'string',
         'marks' => 'integer',
     ];
 

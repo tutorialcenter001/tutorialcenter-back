@@ -23,7 +23,7 @@ return new class extends Migration
                 ->constrained('past_question_groups')
                 ->nullOnDelete();
 
-            $table->string('question_number')->nullable();
+            $table->integer('question_number')->nullable();
 
             $table->longText('question');
 
