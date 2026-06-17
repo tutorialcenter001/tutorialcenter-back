@@ -14,13 +14,15 @@ class PastQuestionController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = PastQuestion::with([
-                'examYear.examBody',
-                'examYear.subject',
-                'group',
-                'options',
-                'files',
-            ]);
+            // $query = PastQuestion::with([
+            //     'examYear.examBody',
+            //     'examYear.subject',
+            //     'group',
+            //     'options',
+            //     'files',
+            // ]);
+
+            $query = PastQuestion::query();
 
             if ($request->filled('exam_year_id')) {
                 $query->where('exam_year_id', $request->exam_year_id);
