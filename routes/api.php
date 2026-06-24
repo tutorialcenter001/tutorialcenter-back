@@ -161,7 +161,7 @@ Route::prefix('staffs')->group(function () {
 /*
  * Admin Only Protected Routes (enforced in controller)
  */
-Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:admin', 'staff.role:moderator'])->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:admin,moderator'])->group(function () {
     //Staffs Management
     Route::prefix('staffs')->group(function () {
         Route::get('/all', [StaffController::class, 'index']); // List all staff members 
