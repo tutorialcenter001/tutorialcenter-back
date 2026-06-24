@@ -29,7 +29,7 @@ return new class extends Migration
             $table->timestamp('tel_verified_at')->nullable()->comment('When a new staff verifies their telephone number that time is stored here');
             $table->string('location')->comment('This should be the persons country and state');
             $table->string('address');
-            $table->string('role')->comment('This should be either admin, tutor or advisor');
+            $table->string('role')->comment('This should be either admin, tutor, advisor, or moderator');
             $table->bigInteger('inducted_by')->nullable();
             $table->softDeletes()->comment('Use Laravel softDelete module');
             $table->timestamps();
