@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'bulksms' => [
+        'base_url' => env('BULK_SMS_BASE_URL'),
+        'api_token' => env('BULK_SMS_API_TOKEN'),
+        'sender_id' => env('BULK_SMS_SENDER_ID'),
+    ],
 ];

@@ -108,7 +108,7 @@ class SubjectController extends Controller
             }
 
             DB::commit();
-            AdminNotificationService::notify("New Subject Created: {$subject->name}", "A new subject has been created with ID: {$subject->id}. for departments: " . implode(', ', $subject->departments) . "under courses: " . implode(', ', $subject->courses()->pluck('name')->toArray()));
+            AdminNotificationService::notify("New Subject Created: {$subject->name}", "A new subject has been created with ID: {$subject->id}. for departments: " . implode(', ', $subject->departments) . "under courses: " . implode(', ', $subject->courses()->pluck('title')->toArray()));
             return response()->json([
                 'message' => 'Subject created successfully.',
                 'subject' => $subject->load('courses'),

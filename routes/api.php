@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('students')->group(function () {
+    Route::post('/send-phone-otp', [StudentController::class, 'sendPhoneOtp']); // Send Phone OTP
     Route::post('/login', [StudentController::class, 'login']); // Login Method
     // Route::post('/register', [StudentController::class, 'store']); // Registration
     // Route::post('/biodata', [StudentController::class, 'biodata']); // Biodata completion (NO AUTH REQUIRED, but verification enforced)
