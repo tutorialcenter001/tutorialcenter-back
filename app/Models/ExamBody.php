@@ -60,9 +60,4 @@ class ExamBody extends Model
     {
         return $this->hasMany(PastQuestion::class);
     }
-
-    // public function exams()
-    // {
-    //     return $this->hasMany(Exam::class);
-    // }
 }

@@ -20,8 +20,6 @@ class PastQuestionOption extends Model
         'past_question_id' => 'integer',
     ];
 
-    // protected $hidden = ['is_correct'];
-
     public function question()
     {
         return $this->belongsTo(PastQuestion::class, 'past_question_id');
