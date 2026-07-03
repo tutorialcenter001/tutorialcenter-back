@@ -991,103 +991,81 @@ class StudentController extends Controller
     /**
      * Summary of sendPhoneOtp
      **/
-    // protected function sendPhoneOtp(string $tel): void
-    // {
-    //     DB::beginTransaction();
-
-    //     try {
-    //         // 1. Delete any existing OTPs for this phone
-    //         DB::table('phone_otps')
-    //             ->where('tel', $tel)
-    //             ->delete();
-
-    //         // 2. Generate OTP
-    //         $code = random_int(100000, 999999);
-
-    //         $message = "Your verification code is {$code}. It expires in 10 minutes.";
-
-    //         /**
-    //          * 3. Send SMS (SIMULATED)
-    //          * Replace this block when integrating real SMS provider
-    //          */
-    //         $smsSent = true; // simulate success
-
-    //         // Example real usage later:
-    //         // $smsSent = SmsService::send($tel, $message);
-
-    //         if (!$smsSent) {
-    //             throw new \Exception('SMS sending failed');
-    //         }
-
-    //         // 4. Save OTP ONLY if SMS was sent
-    //         DB::table('phone_otps')->insert([
-    //             'tel' => $tel,
-    //             'code' => Hash::make($code),
-    //             'expires_at' => Carbon::now()->addMinutes(10),
-    //             'created_at' => now(),
-    //             'updated_at' => now(),
-    //         ]);
-
-    //         DB::commit();
-
-    //         // TEMP: log instead of sending SMS
-    //         logger()->info("OTP for {$tel} is {$code}");
-
-    //     } catch (\Throwable $e) {
-    //         DB::rollBack();
-    //         throw $e; // Let controller decide response
-    //     }
-    // }
-
-    // protected function sendPhoneOtp(string $tel): void
-    // public function sendPhoneOtp(string $tel): void
-    // {
-    //     // DB::table('phone_otps')
-    //     //     ->where('tel', $tel)
-    //     //     ->delete();
-
-    //     $code = random_int(100000, 999999);
-
-    //     app(BulkSMSService::class)->sendSMS(
-    //         $tel,
-    //         "Your Tutorial Center verification code is {$code}. It expires in 10 minutes."
-    //     );
-
-    //     // DB::table('phone_otps')->insert([
-    //     //     'tel' => $tel,
-    //     //     'code' => Hash::make($code),
-    //     //     'expires_at' => now()->addMinutes(10),
-    //     //     'created_at' => now(),
-    //     //     'updated_at' => now(),
-    //     // ]);
-    // }
-
-    public function sendPhoneOtp(Request $request)
+    protected function sendPhoneOtp(string $tel): void
     {
-        try {
-            $request->validate([
-                'tel' => ['required', 'string'],
-            ]);
+        DB::beginTransaction();
 
+        try {
+            // 1. Delete any existing OTPs for this phone
+            DB::table('phone_otps')
+                ->where('tel', $tel)
+                ->delete();
+
+            // 2. Generate OTP
             $code = random_int(100000, 999999);
 
-            $response = app(BulkSMSService::class)->sendSMS(
-                $request->tel,
-                "Your Tutorial Center verification code is {$code}. It expires in 10 minutes."
-            );
+            $message = "Your verification code is {$code}. It expires in 10 minutes.";
 
-            return response()->json([
-                'success' => true,
-                'otp' => $code, // Remove this in production
-                'response' => $response,
+            /**
+             * 3. Send SMS (SIMULATED)
+             * Replace this block when integrating real SMS provider
+             */
+            $smsSent = true; // simulate success
+
+            // Example real usage later:
+            // $smsSent = SmsService::send($tel, $message);
+
+            if (!$smsSent) {
+                throw new \Exception('SMS sending failed');
+            }
+
+            // 4. Save OTP ONLY if SMS was sent
+            DB::table('phone_otps')->insert([
+                'tel' => $tel,
+                'code' => Hash::make($code),
+                'expires_at' => Carbon::now()->addMinutes(10),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-        } catch (\Exception $error) {
-            return response()->json([
-                'success' => false,
-                'errors' => $error->getMessage(),
-            ], 500);
+
+            DB::commit();
+
+            // TEMP: log instead of sending SMS
+            logger()->info("OTP for {$tel} is {$code}");
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e; // Let controller decide response
         }
     }
+
+
+    // public function sendPhoneOtp(Request $request)
+    // {
+    //     try {
+    //         $request->validate([
+    //             'tel' => ['required', 'string'],
+    //         ]);
+
+    //         $code = random_int(100000, 999999);
+
+    //         $response = app(BulkSMSService::class)->sendSMS(
+    //             $request->tel,
+    //             "Your Tutorial Center verification code is {$code}. It expires in 10 minutes."
+    //         );
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'otp' => $code, // Remove this in production
+    //             'response' => $response,
+    //         ]);
+    //     } catch (\Exception $error) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'errors' => $error->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
     /**
      * Summary of verifyPhoneOtp
