@@ -18,6 +18,7 @@ use App\Http\Controllers\StudentExamResultController;
 use App\Http\Controllers\PastQuestionGroupController;
 use App\Http\Controllers\PastQuestionOptionController;
 use App\Http\Controllers\StudentExamQuestionController;
+use App\Http\Controllers\AdminDashboardAnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -163,6 +164,10 @@ Route::prefix('staffs')->group(function () {
  * Admin Only Protected Routes (enforced in controller)
  */
 Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:admin,moderator'])->group(function () {
+
+    Route::get('/dashboard/mock-analytics',[AdminDashboardAnalyticsController::class, 'examAnalytics']); // Exam Analytics
+
+
     //Staffs Management
     Route::prefix('staffs')->group(function () {
         Route::get('/all', [StaffController::class, 'index']); // List all staff members 
