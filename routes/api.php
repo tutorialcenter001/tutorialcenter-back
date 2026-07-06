@@ -104,7 +104,7 @@ Route::prefix('students')->middleware('auth:sanctum')->group(function () {
         Route::post('/{attempt}/answer', [StudentExamQuestionController::class, 'submitAnswer']); // Save/update answer        
         Route::post('/{attempt}/submit', [StudentExamResultController::class, 'submit']); // Submit and finish exam
         Route::get('/results/history', [StudentExamResultController::class, 'history']); // Student attempt history
-        Route::get('/{attempt}/review',[StudentExamResultController::class, 'review']); // Review attempt with answers and explanations
+        Route::get('/{attempt}/review', [StudentExamResultController::class, 'review']); // Review attempt with answers and explanations
     });
 });
 
@@ -165,8 +165,11 @@ Route::prefix('staffs')->group(function () {
  */
 Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:admin,moderator'])->group(function () {
 
-    Route::get('/dashboard/mock-analytics',[AdminDashboardAnalyticsController::class, 'examAnalytics']); // Exam Analytics
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/leaderboard', [AdminDashboardAnalyticsController::class, 'leaderboard']); // Leaderboard
+        Route::get('/mock-analytics', [AdminDashboardAnalyticsController::class, 'examAnalytics']); // Exam Analytics
 
+    });
 
     //Staffs Management
     Route::prefix('staffs')->group(function () {

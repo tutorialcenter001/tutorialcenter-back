@@ -29,7 +29,6 @@ class AdminDashboardAnalyticsController extends Controller
                 'message' => 'Exam analytics retrieved successfully.',
                 'data' => $analytics,
             ]);
-
         } catch (\Throwable $e) {
 
             return response()->json([
@@ -40,5 +39,17 @@ class AdminDashboardAnalyticsController extends Controller
                     : null,
             ], 500);
         }
+    }
+
+    /**
+     * Leaderboard of students based on average score and total attempts
+     */
+    public function leaderboard(
+        ExamAnalyticsService $analytics
+    ) {
+        return response()->json([
+            'success' => true,
+            'data' => $analytics->leaderboard(),
+        ]);
     }
 }

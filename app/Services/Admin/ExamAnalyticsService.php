@@ -303,4 +303,84 @@ class ExamAnalyticsService
             ->limit($limit)
             ->get();
     }
+
+    /**
+     * Leaderboard of students based on average score and total attempts
+     */
+    public function leaderboard(int $limit = 20)
+    {
+        return Student::query()
+            ->leftJoin(
+                'exam_attempts',
+                function ($join) {
+                    $join->on(
+                        'students.id',
+                        '=',
+                        'exam_attempts.student_id'
+                    )
+                        ->where(
+                            'exam_attempts.status',
+                            ExamAttempt::COMPLETED
+                        );
+                }
+            )
+            ->select(
+                'students.id',
+                'students.firstname',
+                'students.surname',
+                'students.profile_picture'
+            )
+            ->selectRaw("
+            COUNT(exam_attempts.id) AS total_attempts,
+            ROUND(AVG(exam_attempts.percentage),2) AS average_score,
+            MAX(exam_attempts.percentage) AS highest_score,
+            SUM(exam_attempts.correct_answers) AS total_correct_answers,
+            SUM(exam_attempts.score) AS total_score
+        ")
+            ->groupBy(
+                'students.id',
+                'students.firstname',
+                'students.surname',
+                'students.profile_picture'
+            )
+            ->orderByDesc('average_score')
+            ->orderByDesc('total_attempts')
+            ->limit($limit)
+            ->get()
+            ->values()
+            ->map(function ($student, $index) {
+
+                return [
+
+                    'rank' => $index + 1,
+
+                    'student_id' => $student->id,
+
+                    'name' =>
+                    trim(
+                        $student->firstname .
+                            ' ' .
+                            $student->surname
+                    ),
+
+                    'profile_picture' =>
+                    $student->profile_picture,
+
+                    'average_score' =>
+                    (float) ($student->average_score ?? 0),
+
+                    'highest_score' =>
+                    (int) ($student->highest_score ?? 0),
+
+                    'total_attempts' =>
+                    (int) $student->total_attempts,
+
+                    'total_correct_answers' =>
+                    (int) ($student->total_correct_answers ?? 0),
+
+                    'total_score' =>
+                    (int) ($student->total_score ?? 0),
+                ];
+            });
+    }
 }
