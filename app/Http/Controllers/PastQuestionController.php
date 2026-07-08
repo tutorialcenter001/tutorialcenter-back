@@ -97,8 +97,7 @@ class PastQuestionController extends Controller
     {
         try {
 
-            $questions = DB::table('past_questions')
-                ->get();
+            $questions = PastQuestion::get();
 
             return response()->json($questions);
         } catch (\Throwable $e) {
