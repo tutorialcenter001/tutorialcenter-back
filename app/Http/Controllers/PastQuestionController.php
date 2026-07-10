@@ -83,7 +83,7 @@ class PastQuestionController extends Controller
             $questions = $query
                 // ->orderBy('question_number')->get();
                 ->orderBy('question_number')
-                ->paginate(100);
+                ->paginate(50);
             return response()->json(['questions' => $questions], 200);
         } catch (\Exception $e) {
             return response()->json([
