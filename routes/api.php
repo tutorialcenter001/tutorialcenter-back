@@ -168,7 +168,6 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
     Route::prefix('dashboard')->group(function () {
         Route::get('/leaderboard', [AdminDashboardAnalyticsController::class, 'leaderboard']); // Leaderboard
         Route::get('/mock-analytics', [AdminDashboardAnalyticsController::class, 'examAnalytics']); // Exam Analytics
-
     });
 
     //Staffs Management
