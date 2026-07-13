@@ -513,7 +513,7 @@ class ClassesController extends Controller
     /**
      * (advisor) Get advisor schedule with advisees' classes
     **/
-    public function advisorClassSchedule(Request $request){
+    public function advisorClassesSchedule(Request $request){
         try {
             $staff = $request->user();
     
