@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -48,8 +49,15 @@ class ClassSession extends Model
 
     // Each session can have many attendances
     public function attendances()
-{
-    return $this->hasMany(ClassAttendance::class, 'class_session_id');
-}
-}
+    {
+        return $this->hasMany(ClassAttendance::class, 'class_session_id');
+    }
 
+    public function feedbacks()
+    {
+        return $this->morphMany(
+            Feedback::class,
+            'feedbackable'
+        );
+    }
+}

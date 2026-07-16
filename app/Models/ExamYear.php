@@ -39,4 +39,12 @@ class ExamYear extends Model
     {
         return $this->hasMany(PastQuestionGroup::class);
     }
+
+    public function feedbacks()
+    {
+        return $this->morphMany(
+            Feedback::class,
+            'feedbackable'
+        );
+    }
 }

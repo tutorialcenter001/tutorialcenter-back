@@ -51,8 +51,18 @@ class Staff extends Model
             ->withPivot(['role', 'assigned_at'])
             ->withTimestamps();
     }
+
     public function scopeAdmins($query)
     {
         return $query->where('role', 'admin');
+    }
+
+    // Each staff member can have many feedbacks
+    public function feedbacks()
+    {
+        return $this->morphMany(
+            Feedback::class,
+            'feedbackable'
+        );
     }
 }

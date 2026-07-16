@@ -132,4 +132,13 @@ class Student extends Model
                 $examYear->subject_id
             );
     }
+
+    // Each student can have many feedbacks
+    public function feedbacks()
+    {
+        return $this->morphMany(
+            Feedback::class,
+            'feedbacker'
+        );
+    }
 }

@@ -52,4 +52,12 @@ class Guardian extends Model
             ->withTimestamps();
     }
 
+    // Each guardian can have many feedbacks
+    public function feedbacks()
+    {
+        return $this->morphMany(
+            Feedback::class,
+            'feedbacker'
+        );
+    }
 }

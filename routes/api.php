@@ -10,6 +10,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ExamBodyController;
 use App\Http\Controllers\ExamYearController;
 use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\StudentExamController;
 use App\Http\Controllers\NotificationController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\PastQuestionGroupController;
 use App\Http\Controllers\PastQuestionOptionController;
 use App\Http\Controllers\StudentExamQuestionController;
 use App\Http\Controllers\AdminDashboardAnalyticsController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -96,7 +98,6 @@ Route::prefix('students')->middleware('auth:sanctum')->group(function () {
     | Student Exam Routes
     |--------------------------------------------------------------------------
     */
-
     Route::prefix('exams')->group(function () {
         Route::get('/available', [StudentExamController::class, 'available']); // List exams student can access
         Route::post('/start/{examYear}', [StudentExamController::class, 'start']); // Start an exam
@@ -105,6 +106,16 @@ Route::prefix('students')->middleware('auth:sanctum')->group(function () {
         Route::post('/{attempt}/submit', [StudentExamResultController::class, 'submit']); // Submit and finish exam
         Route::get('/results/history', [StudentExamResultController::class, 'history']); // Student attempt history
         Route::get('/{attempt}/review', [StudentExamResultController::class, 'review']); // Review attempt with answers and explanations
+    });
+
+
+    // Feedback Routes
+    Route::prefix('feedback')->group(function () {
+        Route::get('/', [FeedbackController::class, 'index']); // My feedback history
+        Route::post('/', [FeedbackController::class, 'store']); // Submit feedback
+        Route::get('/{feedback}',[FeedbackController::class, 'show']); // View one feedback
+        Route::put('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback
+        Route::patch('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback (PATCH alternative)
     });
 });
 
@@ -269,6 +280,16 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+
+    // Feedback Routes
+    Route::prefix('feedback')->group(function () {
+        Route::get('/', [FeedbackController::class, 'index']); // My feedback history
+        Route::post('/', [FeedbackController::class, 'store']); // Submit feedback
+        Route::get('/{feedback}',[FeedbackController::class, 'show']); // View one feedback
+        Route::put('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback
+        Route::patch('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback (PATCH alternative)
+        Route::delete('/{feedback}',[FeedbackController::class, 'destroy']); // Delete my feedback
+    });
 });
 
 /*

@@ -46,4 +46,12 @@ class ExamAttempt extends Model
     {
         return $this->hasMany(ExamAttemptAnswer::class);
     }
+
+    public function feedbacks()
+    {
+        return $this->morphMany(
+            Feedback::class,
+            'feedbackable'
+        );
+    }
 }
