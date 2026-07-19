@@ -65,4 +65,20 @@ class Staff extends Model
             'feedbackable'
         );
     }
+
+    public function supportTickets()
+    {
+        return $this->morphMany(
+            SupportTicket::class,
+            'requester'
+        );
+    }
+
+    public function supportMessages()
+    {
+        return $this->morphMany(
+            SupportTicketMessage::class,
+            'sender'
+        );
+    }
 }

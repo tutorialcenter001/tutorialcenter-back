@@ -60,4 +60,20 @@ class Guardian extends Model
             'feedbacker'
         );
     }
+
+    public function supportTickets()
+    {
+        return $this->morphMany(
+            SupportTicket::class,
+            'requester'
+        );
+    }
+
+    public function supportMessages()
+    {
+        return $this->morphMany(
+            SupportTicketMessage::class,
+            'sender'
+        );
+    }
 }
