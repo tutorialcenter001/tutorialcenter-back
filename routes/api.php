@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ZoomController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\PaymentController;
@@ -74,6 +75,7 @@ Route::prefix('students')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('students')->middleware('auth:sanctum')->group(function () {
+    Route::post('/zoom/signature', [ZoomController::class, 'generateSignature']);
     Route::post('/logout', [StudentController::class, 'logout']); // Logout Method
     Route::put('/profile/update', [StudentController::class, 'update']); // Update student profile
     Route::get('/payments', [PaymentController::class, 'myPayments']); // Listing out all payments
@@ -144,6 +146,7 @@ Route::prefix('guardians')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('staffs')->group(function () {
+    Route::post('/zoom/signature', [ZoomController::class, 'generateSignature']);
     // Login (restricted until verified)
     Route::post('/login', [StaffController::class, 'login']);
 

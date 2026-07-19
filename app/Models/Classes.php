@@ -19,6 +19,10 @@ class Classes extends Model
         'title',
         'description',
         'status', // consider using ENUM in migration for active/inactive etc.
+        'zoom_meeting_id',
+        'zoom_meeting_password',
+        'zoom_join_url',
+        'zoom_start_url',
     ];
 
     /**
@@ -34,9 +38,9 @@ class Classes extends Model
             'class_id',      // foreign key on pivot referencing Classes
             'staff_id'       // foreign key on pivot referencing Staff
         )
-        ->using(ClassStaff::class) // pivot model
-        ->withPivot('role')
-        ->withTimestamps();
+            ->using(ClassStaff::class) // pivot model
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     // Class schedules (one-to-many)
