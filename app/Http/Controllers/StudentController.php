@@ -1374,6 +1374,7 @@ class StudentController extends Controller
             ->with([
                 'guardians',
                 'courseEnrollments.course',
+                'courseEnrollments.course.subjects',
                 'advisors',
                 'attendances',
             ])
@@ -1399,11 +1400,11 @@ class StudentController extends Controller
                         'course_id' => $enrollment->course_id,
                         'enrollment_status' => $enrollment->status ?? null,
                         'enrolled_at' => $enrollment->created_at,
-
+                        'subjects' => $enrollment->course->subjects ?? [],
                         'course_information' => $enrollment->course,
                     ];
                 }),
-
+                
                 'advisors' => $student->advisors,
                 'attendance' => $student->attendances,
             ],
