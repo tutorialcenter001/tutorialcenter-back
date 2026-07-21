@@ -334,8 +334,8 @@ class ExamAnalyticsService
             COUNT(exam_attempts.id) AS total_attempts,
             ROUND(AVG(exam_attempts.percentage),2) AS average_score,
             MAX(exam_attempts.percentage) AS highest_score,
-            SUM(exam_attempts.correct_answers) AS total_correct_answers,
-            SUM(exam_attempts.score) AS total_score
+            COALESCE(SUM(exam_attempts.correct_answers),0) AS total_correct_answers,
+            COALESCE(SUM(exam_attempts.score),0) AS total_score
         ")
             ->groupBy(
                 'students.id',
@@ -343,8 +343,10 @@ class ExamAnalyticsService
                 'students.surname',
                 'students.profile_picture'
             )
-            ->orderByDesc('average_score')
+            ->orderByDesc('total_correct_answers')
+            ->orderByDesc('highest_score')
             ->orderByDesc('total_attempts')
+            ->orderByDesc('average_score')
             ->limit($limit)
             ->get()
             ->values()
@@ -356,31 +358,100 @@ class ExamAnalyticsService
 
                     'student_id' => $student->id,
 
-                    'name' =>
-                    trim(
-                        $student->firstname .
-                            ' ' .
-                            $student->surname
+                    'name' => trim(
+                        $student->firstname . ' ' . $student->surname
                     ),
 
-                    'profile_picture' =>
-                    $student->profile_picture,
+                    'profile_picture' => $student->profile_picture,
 
-                    'average_score' =>
-                    (float) ($student->average_score ?? 0),
+                    'total_correct_answers' => (int) $student->total_correct_answers,
 
-                    'highest_score' =>
-                    (int) ($student->highest_score ?? 0),
+                    'total_attempts' => (int) $student->total_attempts,
 
-                    'total_attempts' =>
-                    (int) $student->total_attempts,
+                    'highest_score' => (int) $student->highest_score,
 
-                    'total_correct_answers' =>
-                    (int) ($student->total_correct_answers ?? 0),
+                    'average_score' => (float) $student->average_score,
 
-                    'total_score' =>
-                    (int) ($student->total_score ?? 0),
+                    'total_score' => (int) $student->total_score,
+
                 ];
             });
     }
+    
+    // public function leaderboard(int $limit = 20)
+    // {
+    //     return Student::query()
+    //         ->leftJoin(
+    //             'exam_attempts',
+    //             function ($join) {
+    //                 $join->on(
+    //                     'students.id',
+    //                     '=',
+    //                     'exam_attempts.student_id'
+    //                 )
+    //                     ->where(
+    //                         'exam_attempts.status',
+    //                         ExamAttempt::COMPLETED
+    //                     );
+    //             }
+    //         )
+    //         ->select(
+    //             'students.id',
+    //             'students.firstname',
+    //             'students.surname',
+    //             'students.profile_picture'
+    //         )
+    //         ->selectRaw("
+    //         COUNT(exam_attempts.id) AS total_attempts,
+    //         ROUND(AVG(exam_attempts.percentage),2) AS average_score,
+    //         MAX(exam_attempts.percentage) AS highest_score,
+    //         SUM(exam_attempts.correct_answers) AS total_correct_answers,
+    //         SUM(exam_attempts.score) AS total_score
+    //     ")
+    //         ->groupBy(
+    //             'students.id',
+    //             'students.firstname',
+    //             'students.surname',
+    //             'students.profile_picture'
+    //         )
+    //         ->orderByDesc('average_score')
+    //         ->orderByDesc('total_attempts')
+    //         ->limit($limit)
+    //         ->get()
+    //         ->values()
+    //         ->map(function ($student, $index) {
+
+    //             return [
+
+    //                 'rank' => $index + 1,
+
+    //                 'student_id' => $student->id,
+
+    //                 'name' =>
+    //                 trim(
+    //                     $student->firstname .
+    //                         ' ' .
+    //                         $student->surname
+    //                 ),
+
+    //                 'profile_picture' =>
+    //                 $student->profile_picture,
+
+    //                 'average_score' =>
+    //                 (float) ($student->average_score ?? 0),
+
+    //                 'highest_score' =>
+    //                 (int) ($student->highest_score ?? 0),
+
+    //                 'total_attempts' =>
+    //                 (int) $student->total_attempts,
+
+    //                 'total_correct_answers' =>
+    //                 (int) ($student->total_correct_answers ?? 0),
+
+    //                 'total_score' =>
+    //                 (int) ($student->total_score ?? 0),
+    //             ];
+    //         });
+    // }
 }
