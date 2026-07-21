@@ -75,6 +75,7 @@ Route::prefix('students')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('students')->middleware('auth:sanctum')->group(function () {
+    Route::get('/leaderboard', [AdminDashboardAnalyticsController::class, 'leaderboard']); // Leaderboard
     Route::post('/zoom/signature', [ZoomController::class, 'generateSignature']);
     Route::post('/logout', [StudentController::class, 'logout']); // Logout Method
     Route::put('/profile/update', [StudentController::class, 'update']); // Update student profile
@@ -146,6 +147,7 @@ Route::prefix('guardians')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('staffs')->group(function () {
+    Route::get('/leaderboard', [AdminDashboardAnalyticsController::class, 'leaderboard']); // Leaderboard
     Route::post('/zoom/signature', [ZoomController::class, 'generateSignature']);
     // Login (restricted until verified)
     Route::post('/login', [StaffController::class, 'login']);
