@@ -187,6 +187,16 @@ Route::prefix('staffs')->group(function () {
         Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
 
+        // Feedback Routes
+        Route::prefix('feedback')->group(function () {
+            Route::get('/', [FeedbackController::class, 'index']); // My feedback history
+            Route::post('/', [FeedbackController::class, 'store']); // Submit feedback
+            Route::get('/{feedback}', [FeedbackController::class, 'show']); // View one feedback
+            // Route::put('/{feedback}', [FeedbackController::class, 'update']); // Update my feedback
+            // Route::patch('/{feedback}', [FeedbackController::class, 'update']); // Update my feedback (PATCH alternative)
+            // Route::delete('/{feedback}', [FeedbackController::class, 'destroy']); // Delete my feedback
+        });
+
         // Support Routes
         Route::prefix('support')->group(function () {
             Route::get('/', [SupportController::class, 'index']); // List my support tickets
@@ -320,6 +330,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
         Route::delete('/{feedback}', [FeedbackController::class, 'destroy']); // Delete my feedback
     });
 
+    // Support Routes
     Route::prefix('support')->group(function () {
         Route::get('/', [AdminSupportController::class, 'index']); // List all support tickets
         Route::get('/analytics', [AdminSupportController::class, 'analytics']); // Support analytics
@@ -328,7 +339,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
         Route::post('/{supportTicket}/reply', [AdminSupportController::class, 'reply']); // Reply to a specific support ticket
         Route::patch('/{supportTicket}/status', [AdminSupportController::class, 'status']); // Update the status of a specific support ticket
         Route::patch('/{supportTicket}/priority', [AdminSupportController::class, 'priority']); // Update the priority of a specific support ticket
-        Route::delete('/{supportTicket}',[AdminSupportController::class, 'destroy']); // Delete a specific support ticket
+        Route::delete('/{supportTicket}', [AdminSupportController::class, 'destroy']); // Delete a specific support ticket
     });
 });
 
