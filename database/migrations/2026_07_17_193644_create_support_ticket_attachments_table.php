@@ -12,11 +12,7 @@ return new class extends Migration
 
             $table->id();
 
-            $table->foreignId(
-                'support_ticket_message_id'
-            )
-                ->constrained('support_ticket_messages')
-                ->cascadeOnDelete();
+            $table->foreignId('support_ticket_message_id')->constrained()->cascadeOnDelete();
 
             $table->string('file_name');
 
