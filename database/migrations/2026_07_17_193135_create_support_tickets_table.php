@@ -36,7 +36,7 @@ return new class extends Migration
 
             $table->foreignId('assigned_staff_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('staffs')
                 ->nullOnDelete();
 
             /*
