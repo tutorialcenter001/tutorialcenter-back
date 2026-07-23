@@ -47,7 +47,7 @@ return new class extends Migration
 
             // $table->string('category');
             $table->foreignId('support_category_id')
-                ->constrained()
+                ->constrained('support_categories')
                 ->restrictOnDelete();
 
             $table->string('subject');
