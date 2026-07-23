@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ZoomController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\SupportController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ClassesController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\StudentExamController;
+use App\Http\Controllers\AdminSupportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PastQuestionController;
 use App\Http\Controllers\StudentExamResultController;
@@ -116,9 +118,20 @@ Route::prefix('students')->middleware('auth:sanctum')->group(function () {
     Route::prefix('feedback')->group(function () {
         Route::get('/', [FeedbackController::class, 'index']); // My feedback history
         Route::post('/', [FeedbackController::class, 'store']); // Submit feedback
-        Route::get('/{feedback}',[FeedbackController::class, 'show']); // View one feedback
-        Route::put('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback
-        Route::patch('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback (PATCH alternative)
+        Route::get('/{feedback}', [FeedbackController::class, 'show']); // View one feedback
+        // Route::put('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback
+        // Route::patch('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback (PATCH alternative)
+    });
+
+    // Support Routes
+    Route::prefix('support')->group(function () {
+        Route::get('/', [SupportController::class, 'index']); // List my support tickets
+        Route::post('/', [SupportController::class, 'store']); // Create a new support ticket
+        Route::get('/{supportTicket}', [SupportController::class, 'show']); // View a specific support ticket
+        Route::post('/{supportTicket}/reply', [SupportController::class, 'reply']); // Reply to a specific support ticket
+        Route::patch('/{supportTicket}/close', [SupportController::class, 'close']); // Close a specific support ticket
+        Route::patch('/{supportTicket}/reopen', [SupportController::class, 'reopen']); // Reopen a specific support ticket
+        // Route::delete('/{supportTicket}',[SupportController::class, 'destroy']); // Delete a specific support ticket (if needed)
     });
 });
 
@@ -173,6 +186,17 @@ Route::prefix('staffs')->group(function () {
         Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+
+        // Support Routes
+        Route::prefix('support')->group(function () {
+            Route::get('/', [SupportController::class, 'index']); // List my support tickets
+            Route::post('/', [SupportController::class, 'store']); // Create a new support ticket
+            Route::get('/{supportTicket}', [SupportController::class, 'show']); // View a specific support ticket
+            Route::post('/{supportTicket}/reply', [SupportController::class, 'reply']); // Reply to a specific support ticket
+            Route::patch('/{supportTicket}/close', [SupportController::class, 'close']); // Close a specific support ticket
+            Route::patch('/{supportTicket}/reopen', [SupportController::class, 'reopen']); // Reopen a specific support ticket
+            // Route::delete('/{supportTicket}',[SupportController::class, 'destroy']); // Delete a specific support ticket (if needed)
+        });
     });
 });
 
@@ -290,10 +314,21 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
     Route::prefix('feedback')->group(function () {
         Route::get('/', [FeedbackController::class, 'index']); // My feedback history
         Route::post('/', [FeedbackController::class, 'store']); // Submit feedback
-        Route::get('/{feedback}',[FeedbackController::class, 'show']); // View one feedback
-        Route::put('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback
-        Route::patch('/{feedback}',[FeedbackController::class, 'update']); // Update my feedback (PATCH alternative)
-        Route::delete('/{feedback}',[FeedbackController::class, 'destroy']); // Delete my feedback
+        Route::get('/{feedback}', [FeedbackController::class, 'show']); // View one feedback
+        Route::put('/{feedback}', [FeedbackController::class, 'update']); // Update my feedback
+        Route::patch('/{feedback}', [FeedbackController::class, 'update']); // Update my feedback (PATCH alternative)
+        Route::delete('/{feedback}', [FeedbackController::class, 'destroy']); // Delete my feedback
+    });
+
+    Route::prefix('support')->group(function () {
+        Route::get('/', [AdminSupportController::class, 'index']); // List all support tickets
+        Route::get('/analytics', [AdminSupportController::class, 'analytics']); // Support analytics
+        Route::get('/{supportTicket}', [AdminSupportController::class, 'show']); // View a specific support ticket
+        Route::patch('/{supportTicket}/assign', [AdminSupportController::class, 'assign']); // Assign a specific support ticket to a staff member
+        Route::post('/{supportTicket}/reply', [AdminSupportController::class, 'reply']); // Reply to a specific support ticket
+        Route::patch('/{supportTicket}/status', [AdminSupportController::class, 'status']); // Update the status of a specific support ticket
+        Route::patch('/{supportTicket}/priority', [AdminSupportController::class, 'priority']); // Update the priority of a specific support ticket
+        Route::delete('/{supportTicket}',[AdminSupportController::class, 'destroy']); // Delete a specific support ticket
     });
 });
 
@@ -312,5 +347,13 @@ Route::prefix('tutor')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:tu
 Route::prefix('advisor')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:advisor'])->group(function () {
     Route::prefix('classes')->group(function () {
         Route::get('/schedule', [ClassesController::class, 'advisorClassesSchedule']); // Get advisor schedule with attendance status     
+    });
+
+    // Student Management
+    Route::prefix('students')->group(function () {
+        // Route::post('/restore/{id}', [StudentController::class, 'restore']); // Restore a soft-deleted student
+        // Route::delete('/destroy/{id}', [StudentController::class, 'destroy']); // Soft delete a student
+        Route::get('/all', [StudentController::class, 'index']); // List all students
+        Route::get('/{id}', [StudentController::class, 'show']); // Show student details
     });
 });

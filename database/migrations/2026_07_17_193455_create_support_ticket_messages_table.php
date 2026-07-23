@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('support_ticket_id')
-                ->constrained()
+                ->constrained('support_tickets')
                 ->cascadeOnDelete();
 
             /*

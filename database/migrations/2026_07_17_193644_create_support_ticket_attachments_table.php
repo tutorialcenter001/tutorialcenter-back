@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId(
                 'support_ticket_message_id'
             )
-                ->constrained()
+                ->constrained('support_ticket_messages')
                 ->cascadeOnDelete();
 
             $table->string('file_name');
