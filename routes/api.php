@@ -61,6 +61,7 @@ Route::get('/courses/{courseId}/subjects/{department}', [SubjectController::clas
 Route::post('payments', [PaymentController::class, 'store']);
 Route::post('payments/verify-paystack', [PaymentController::class, 'verifyPaystackPayment']);
 Route::post('payments/bank-transfer', [PaymentController::class, 'initiateBankTransfer']);
+Route::post('payments/guardian-bank-transfer', [PaymentController::class, 'initiateGuardianBankTransfer']);
 Route::post('payments/bank-transfer/{reference}/claim', [PaymentController::class, 'claimBankTransferPaid'])
     ->where('reference', '[A-Za-z0-9_-]+');
 Route::get('payments/bank-transfer/{reference}', [PaymentController::class, 'bankTransferStatus'])
@@ -132,7 +133,8 @@ Route::prefix('students')->middleware(['auth:sanctum', 'auth:student'])->group(f
     Route::post('/zoom/signature', [ZoomController::class, 'generateSignature']);
     Route::post('/logout', [StudentController::class, 'logout']); // Logout Method
     Route::get('/streak', [StudentController::class, 'learningStreak']); // Get ongoing and maximum learning streak
-    Route::put('/profile/update', [StudentController::class, 'update']); // Update student profile
+    Route::match(['put', 'patch', 'post'], '/profile/update', [StudentController::class, 'update']); // Update student profile
+    Route::match(['put', 'patch', 'post'], '/update', [StudentController::class, 'update']);
     Route::get('/payments', [PaymentController::class, 'myPayments']); // Listing out all payments
     Route::post('/attendance', [AttendanceController::class, 'store']); // Record attendance for a class session
     Route::get('/courses', [CourseController::class, 'getActiveCourses']); // Get Active Courses and Subject
@@ -497,16 +499,19 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
         Route::post('/sessions/{classSession}/status', [ClassesController::class, 'updateSessionStatus']);
         Route::match(['patch', 'post'], '/sessions/{id}/reschedule', [ClassesController::class, 'rescheduleSession']);
         Route::match(['patch', 'post'], '/sessions/{id}/cancel', [ClassesController::class, 'cancelSession']);
+        Route::match(['patch', 'post'], '/sessions/{id}/reopen', [ClassesController::class, 'reopenSession']);
         Route::delete('/sessions/{id}', [ClassesController::class, 'destroySession']);
         Route::post('/sessions/{id}/check-clash', [ClassesController::class, 'checkSessionClash']);
         Route::match(['patch', 'post'], '/{id}/reschedule', [ClassesController::class, 'rescheduleSession']);
         Route::match(['patch', 'post'], '/{id}/cancel', [ClassesController::class, 'cancelSession']);
+        Route::match(['patch', 'post'], '/{id}/reopen', [ClassesController::class, 'reopenSession']);
     });
 
     // Session Management Direct Routes (/api/admin/sessions/...)
     Route::prefix('sessions')->group(function () {
         Route::match(['patch', 'post'], '/{id}/reschedule', [ClassesController::class, 'rescheduleSession']);
         Route::match(['patch', 'post'], '/{id}/cancel', [ClassesController::class, 'cancelSession']);
+        Route::match(['patch', 'post'], '/{id}/reopen', [ClassesController::class, 'reopenSession']);
         Route::delete('/{id}', [ClassesController::class, 'destroySession']);
         Route::post('/{id}/check-clash', [ClassesController::class, 'checkSessionClash']);
     });
@@ -521,7 +526,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
         Route::delete('/destroy/{id}', [StudentController::class, 'destroy']); // Soft delete a student
         Route::get('/all', [StudentController::class, 'index']); // List all students
         Route::get('/{id}', [StudentController::class, 'show']); // Show student details
-        Route::put('/update', [StudentController::class, 'update']); // Update student profile
+        Route::match(['put', 'patch'], '/update/{id}', [StudentController::class, 'update']);
+        Route::match(['put', 'patch'], '/update', [StudentController::class, 'update']); // Update student profile
+        Route::match(['put', 'patch'], '/{id}', [StudentController::class, 'update']);
         Route::post('/{id}/guardians', [StudentController::class, 'assignGuardian']);
         Route::delete('/{id}/guardians/{guardianId}', [StudentController::class, 'detachGuardian']);
         Route::post('/{id}/advisors', [StudentController::class, 'assignAdvisor']);
@@ -823,6 +830,9 @@ Route::prefix('advisor')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:
         // Route::delete('/destroy/{id}', [StudentController::class, 'destroy']); // Soft delete a student
         Route::get('/all', [StudentController::class, 'index']); // List all students
         Route::get('/{id}', [StudentController::class, 'show']); // Show student details
+        Route::match(['put', 'patch'], '/update/{id}', [StudentController::class, 'update']);
+        Route::match(['put', 'patch'], '/update', [StudentController::class, 'update']);
+        Route::match(['put', 'patch'], '/{id}', [StudentController::class, 'update']);
     });
 });
 
