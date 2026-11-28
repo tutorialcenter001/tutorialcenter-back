@@ -39,6 +39,8 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LessonMaterialController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\LessonProgressController;
+use App\Http\Controllers\AdminBootcampController;
+use App\Http\Controllers\PublicBootcampCbtController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,6 +56,15 @@ Route::get('/subjects', [SubjectController::class, 'index']); // Public: List al
 Route::get('/cognitive-tests', [CognitiveTestController::class, 'index']);
 Route::post('/cognitive-tests/start', [CognitiveTestController::class, 'store']);
 Route::post('/cognitive-tests/{cognitiveTest}/complete', [CognitiveTestController::class, 'complete']);
+
+// Unlisted Public Bootcamp CBT Routes
+Route::prefix('public/bootcamp/cbt/{token}')->middleware('throttle:60,1')->group(function () {
+    Route::get('/', [PublicBootcampCbtController::class, 'show']);
+    Route::post('/register', [PublicBootcampCbtController::class, 'register']);
+    Route::post('/login', [PublicBootcampCbtController::class, 'login']);
+    Route::post('/start', [PublicBootcampCbtController::class, 'start']);
+    Route::post('/submit', [PublicBootcampCbtController::class, 'submit']);
+});
 Route::post('/course/enrollment', [CourseController::class, 'courseEnroll']); // Public: Enroll in a course
 Route::post('/subject/enrollment', [SubjectController::class, 'subjectEnroll']); // Public: Enroll in a subject
 Route::get('/courses/{courseId}/subjects', [SubjectController::class, 'subjectsByCourse']); // Public: List subjects by course
@@ -712,6 +723,20 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'auth:staff', 'staff.role:ad
     Route::prefix('course-progress')->group(function () {
         Route::get('/subject/{subjectId}/overview', [LessonProgressController::class, 'subjectOverview']);
         Route::get('/student/{studentId}/subject/{subjectId}', [LessonProgressController::class, 'studentProgress']);
+    });
+
+    // Bootcamp Management (CBTs, Questions, Participants, PIN Reset)
+    Route::prefix('bootcamp')->group(function () {
+        Route::get('/cbts', [AdminBootcampController::class, 'index']);
+        Route::post('/cbts', [AdminBootcampController::class, 'store']);
+        Route::get('/cbts/{id}', [AdminBootcampController::class, 'show']);
+        Route::put('/cbts/{id}', [AdminBootcampController::class, 'update']);
+        Route::patch('/cbts/{id}/toggle-active', [AdminBootcampController::class, 'toggleActive']);
+        Route::post('/cbts/{id}/regenerate-token', [AdminBootcampController::class, 'regenerateToken']);
+        Route::delete('/cbts/{id}', [AdminBootcampController::class, 'destroy']);
+        Route::post('/upload-image', [AdminBootcampController::class, 'uploadImage']);
+        Route::get('/participants', [AdminBootcampController::class, 'participants']);
+        Route::post('/participants/{id}/reset-pin', [AdminBootcampController::class, 'resetParticipantPin']);
     });
 });
 
